@@ -33,6 +33,70 @@ Route::get('/panel/{code}', function ($code) {
     return redirect()->route('catalog.index', ['ref' => $code]);
 });
 
+// Diagnóstico de Salud y Base de Datos (Especial para Vercel)
+Route::get('/health', function () {
+    $dbConfig = config('database.default');
+    $dbHost = config("database.connections.{$dbConfig}.host");
+    $dbPort = config("database.connections.{$dbConfig}.port");
+    $dbName = config("database.connections.{$dbConfig}.database");
+    $dbUser = config("database.connections.{$dbConfig}.username");
+
+    $connected = false;
+    $error = null;
+    $tables = [];
+
+    try {
+        \DB::connection()->getPdo();
+        $connected = true;
+        $tables = \DB::select('SHOW TABLES');
+    } catch (\Throwable $e) {
+        $error = $e->getMessage();
+    }
+
+    return response()->json([
+        'status' => $connected ? 'ok' : 'database_error',
+        'server' => 'Vercel Serverless PHP ' . PHP_VERSION,
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+        'database' => [
+            'driver' => $dbConfig,
+            'host' => $dbHost,
+            'port' => $dbPort,
+            'database' => $dbName,
+            'user' => $dbUser,
+            'connected' => $connected,
+            'tables_count' => count($tables),
+            'error' => $error,
+        ],
+    ]);
+});
+
+// Asistente de Migraciones en la Nube (Seguro mediante token)
+Route::get('/migrate-setup', function (\Illuminate\Http\Request $request) {
+    if ($request->query('key') !== 'cstreame2026') {
+        abort(403, 'Acceso no autorizado. Se requiere clave de seguridad ?key=cstreame2026');
+    }
+
+    try {
+        \DB::connection()->getPdo();
+    } catch (\Throwable $e) {
+        return response("<h3>Error de Conexión a la Base de Datos</h3><p>{$e->getMessage()}</p><p>Verifica que DB_HOST, DB_DATABASE, DB_USERNAME y DB_PASSWORD estén configurados en Vercel.</p>", 500);
+    }
+
+    $output = '';
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output .= "<h4>1. Migraciones:</h4><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $output .= "<h4>2. Datos Iniciales (Seeders):</h4><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+
+        return response("<h2>¡Base de Datos Inicializada con Éxito en Vercel!</h2>" . $output . "<p><a href='/'>Ir al Catálogo Principal</a> | <a href='/login'>Iniciar Sesión</a></p>");
+    } catch (\Throwable $e) {
+        return response("<h3>Error ejecutando migraciones:</h3><pre>{$e->getMessage()}</pre>", 500);
+    }
+});
+
 // PWA Manifest & App Installation Routes (URL corta para compartir por WhatsApp)
 Route::get('/sw.js', function () {
     return response()->file(public_path('sw.js'), [
