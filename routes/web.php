@@ -138,7 +138,10 @@ Route::post('/registro-revendedor/{code}', [\App\Http\Controllers\ResellerContro
 
 Route::get('/boveda/login', [\App\Http\Controllers\CustomerPortalController::class, 'showLogin'])->name('boveda.login');
 Route::post('/boveda/login', [\App\Http\Controllers\CustomerPortalController::class, 'processLogin'])->name('boveda.login.process');
+Route::post('/boveda/login-ajax', [\App\Http\Controllers\CustomerPortalController::class, 'loginAjax'])->name('boveda.login.ajax');
 Route::post('/boveda/logout', [\App\Http\Controllers\CustomerPortalController::class, 'logout'])->name('boveda.logout');
+Route::post('/boveda/logout-ajax', [\App\Http\Controllers\CustomerPortalController::class, 'logoutAjax'])->name('boveda.logout.ajax');
+Route::post('/boveda/recuperar-pin', [\App\Http\Controllers\CustomerPortalController::class, 'recoverPinWithPassword'])->name('boveda.recover_pin');
 
 Route::middleware(['auth:customer'])->group(function () {
     Route::get('/boveda', [\App\Http\Controllers\CustomerPortalController::class, 'index'])->name('boveda.index');

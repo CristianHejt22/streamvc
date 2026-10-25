@@ -69,4 +69,44 @@ class Customer extends Authenticatable
         if (!$this->phone) return null;
         return preg_replace('/[^0-9]/', '', $this->phone);
     }
+
+    /**
+     * Localiza un cliente por email o por teléfono de manera flexible (con o sin espacios, guiones o código de país)
+     */
+    public static function findByInput(?string $input): ?self
+    {
+        if (empty($input)) return null;
+        $input = trim($input);
+
+        // 1. Coincidencia directa por email o teléfono exacto
+        $customer = static::where('email', $input)
+            ->orWhere('phone', $input)
+            ->first();
+
+        if ($customer) return $customer;
+
+        // 2. Coincidencia numérica flexible por dígitos
+        $clean = preg_replace('/[^0-9]/', '', $input);
+        if (!empty($clean) && strlen($clean) >= 6) {
+            $last7 = substr($clean, -7);
+            $candidates = static::where('phone', 'like', "%{$last7}%")
+                ->orWhere('phone', 'like', "%{$clean}%")
+                ->get();
+
+            foreach ($candidates as $cand) {
+                $candClean = preg_replace('/[^0-9]/', '', $cand->phone);
+                if ($candClean && (str_contains($candClean, $clean) || str_contains($clean, $candClean))) {
+                    return $cand;
+                }
+            }
+
+            // Fallback global en memoria
+            return static::all()->first(function ($cand) use ($clean) {
+                $candClean = preg_replace('/[^0-9]/', '', $cand->phone);
+                return $candClean && (str_contains($candClean, $clean) || str_contains($clean, $candClean));
+            });
+        }
+
+        return null;
+    }
 }

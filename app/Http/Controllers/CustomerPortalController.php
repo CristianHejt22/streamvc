@@ -125,15 +125,8 @@ class CustomerPortalController extends Controller
         $loginInput = trim($request->input('login') ?: $request->input('email'));
         $password = $request->input('password');
 
-        // Buscar cliente por email o por teléfono/WhatsApp
-        $cleanPhone = preg_replace('/[^0-9]/', '', $loginInput);
-        $customer = Customer::where('email', $loginInput)
-            ->orWhere('phone', $loginInput)
-            ->when($cleanPhone, function($q) use ($cleanPhone) {
-                $q->orWhere('phone', $cleanPhone)
-                  ->orWhere('phone', 'like', "%{$cleanPhone}%");
-            })
-            ->first();
+        // Buscar cliente por email o por teléfono/WhatsApp de manera flexible
+        $customer = Customer::findByInput($loginInput);
 
         if ($customer) {
             // Validar mediante Hash de contraseña o coincidencia exacta con PIN de 4 dígitos
@@ -168,6 +161,147 @@ class CustomerPortalController extends Controller
 
         return redirect()->route('boveda.login')
             ->with('success', 'Has cerrado sesión correctamente de tu Bóveda Privada.');
+    }
+
+    /**
+     * Inicio de sesión rápido vía AJAX para carritos y checkout
+     */
+    public function loginAjax(Request $request)
+    {
+        $request->validate([
+            'login' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $loginInput = trim($request->input('login'));
+        $password = $request->input('password');
+
+        $customer = Customer::findByInput($loginInput);
+
+        if (!$customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No encontramos ninguna cuenta con ese correo o WhatsApp.',
+            ], 404);
+        }
+
+        if ($customer->status === 'suspended') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tu cuenta se encuentra suspendida temporalmente.',
+            ], 403);
+        }
+
+        $passwordValid = Hash::check($password, $customer->password) || ($customer->security_pin && $password === $customer->security_pin);
+        if (!$passwordValid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La contraseña o PIN de 4 dígitos es incorrecto.',
+            ], 422);
+        }
+
+        Auth::guard('customer')->login($customer, true);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "¡Bienvenido de nuevo, {$customer->name}!",
+            'customer' => [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'security_pin' => $customer->security_pin,
+            ],
+        ]);
+    }
+
+    /**
+     * Cierre de sesión rápido vía AJAX para el checkout
+     */
+    public function logoutAjax(Request $request)
+    {
+        Auth::guard('customer')->logout();
+        if ($request->hasSession()) {
+            $request->session()->regenerateToken();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión cerrada exitosamente.',
+        ]);
+    }
+
+    /**
+     * Recuperación del PIN de Bóveda mediante contraseña
+     * "Con contraseña recupera el PIN de boveda"
+     */
+    public function recoverPinWithPassword(Request $request)
+    {
+        $request->validate([
+            'login' => 'nullable|string',
+            'password' => 'required|string',
+            'new_pin' => 'nullable|string|size:4|regex:/^[0-9]{4}$/',
+        ], [
+            'password.required' => 'Ingresa tu contraseña para verificar tu identidad.',
+            'new_pin.size' => 'El nuevo PIN debe tener exactamente 4 dígitos numéricos.',
+            'new_pin.regex' => 'El nuevo PIN solo puede contener números del 0 al 9.',
+        ]);
+
+        $customer = Auth::guard('customer')->user();
+
+        if (!$customer) {
+            $loginInput = trim($request->input('login'));
+            if (empty($loginInput)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ingresa tu WhatsApp o correo para buscar tu cuenta.',
+                ], 422);
+            }
+
+            $customer = Customer::findByInput($loginInput);
+        }
+
+        if (!$customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No encontramos ninguna cuenta registrada con ese correo o WhatsApp.',
+            ], 404);
+        }
+
+        if (!Hash::check($request->password, $customer->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La contraseña ingresada es incorrecta.',
+            ], 422);
+        }
+
+        // Si se envió un nuevo PIN de 4 dígitos, guardarlo
+        if ($request->filled('new_pin')) {
+            $customer->security_pin = $request->new_pin;
+            $customer->save();
+        } elseif (empty($customer->security_pin)) {
+            $customer->security_pin = strval(rand(1000, 9999));
+            $customer->save();
+        }
+
+        // Autenticar al cliente para que continúe sin trabas
+        Auth::guard('customer')->login($customer, true);
+
+        return response()->json([
+            'success' => true,
+            'security_pin' => $customer->security_pin,
+            'message' => "¡Validación exitosa! Tu PIN de Bóveda es: {$customer->security_pin}",
+            'customer' => [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'security_pin' => $customer->security_pin,
+            ],
+        ]);
     }
 
     /**
