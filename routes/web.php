@@ -115,6 +115,8 @@ Route::get('/instalar/{code?}', [\App\Http\Controllers\PwaController::class, 'in
 
 Route::get('/checkout/{plan}', [CatalogController::class, 'checkout'])->name('catalog.checkout');
 Route::post('/checkout/{plan}', [CatalogController::class, 'processCheckout'])->name('catalog.checkout.process');
+Route::post('/carrito/checkout', [CatalogController::class, 'processCartCheckout'])->name('catalog.cart.process');
+Route::post('/panel/adquirir', [CatalogController::class, 'processPanelCheckout'])->name('catalog.panel.process');
 Route::get('/checkout/mercadopago/{order}', [CatalogController::class, 'mpRedirect'])->name('catalog.mp_redirect');
 Route::post('/checkout/mercadopago/{order}/simulate', [CatalogController::class, 'mpSimulatePayment'])->name('catalog.mp_simulate');
 Route::get('/orden/{order}/exito', [CatalogController::class, 'success'])->name('catalog.success');

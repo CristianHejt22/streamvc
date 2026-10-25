@@ -121,12 +121,10 @@
                     </ul>
                 </div>
                 <div>
-                    @if($supportWhatsapp)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $supportWhatsapp) }}?text=Hola%20{{ urlencode($brandName) }},%20quisiera%20solicitar%20la%20activaci%C3%B3n%20de%20un%20PANEL%20B%C3%81SICO%20por%20${{ number_format($seller->basic_panel_price, 0) }}." target="_blank" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i>
-                        <span>Solicitar Panel Básico (${{ number_format($seller->basic_panel_price, 0, ',', '.') }})</span>
-                    </a>
-                    @endif
+                    <button type="button" @click="openPanelModal('basic', {{ (float)$seller->basic_panel_price }}, 'Panel Franquicia Básico (10 Servicios)')" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                        <span>Adquirir Panel Básico (${{ number_format($seller->basic_panel_price, 0, ',', '.') }})</span>
+                    </button>
                     @if($seller->referral_code)
                     <div class="mt-2 text-center">
                         <a href="{{ route('affiliate.register', $seller->referral_code) }}" class="text-[11px] text-amber-300/80 hover:text-amber-200 hover:underline font-mono inline-flex items-center gap-1">
@@ -174,12 +172,10 @@
                     </ul>
                 </div>
                 <div>
-                    @if($supportWhatsapp)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $supportWhatsapp) }}?text=Hola%20{{ urlencode($brandName) }},%20quisiera%20solicitar%20la%20activaci%C3%B3n%20de%20un%20PANEL%20PRO%20por%20${{ number_format($seller->pro_panel_price, 0) }}." target="_blank" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-purple-600/30">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i>
-                        <span>Solicitar Panel PRO (${{ number_format($seller->pro_panel_price, 0, ',', '.') }})</span>
-                    </a>
-                    @endif
+                    <button type="button" @click="openPanelModal('pro', {{ (float)$seller->pro_panel_price }}, 'Panel Franquicia PRO Ilimitado')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-purple-600/30 cursor-pointer">
+                        <i data-lucide="gem" class="w-4 h-4"></i>
+                        <span>Adquirir Panel PRO (${{ number_format($seller->pro_panel_price, 0, ',', '.') }})</span>
+                    </button>
                     @if($seller->referral_code)
                     <div class="mt-2 text-center">
                         <a href="{{ route('affiliate.register', $seller->referral_code) }}" class="text-[11px] text-purple-300/80 hover:text-purple-200 hover:underline font-mono inline-flex items-center gap-1">
@@ -330,12 +326,10 @@
                 </div>
 
                 <div class="pt-6 mt-6 border-t border-slate-800 space-y-2">
-                    @if($supportWhatsapp)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $supportWhatsapp) }}?text=Hola%20{{ urlencode($brandName) }},%20quisiera%20solicitar%20la%20activaci%C3%B3n%20de%20un%20PANEL%20B%C3%81SICO%20por%20${{ number_format($seller->basic_panel_price, 0) }}." target="_blank" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 cursor-pointer">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <button type="button" @click="openPanelModal('basic', {{ (float)$seller->basic_panel_price }}, 'Panel Franquicia Básico (10 Servicios)')" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 cursor-pointer">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
                         <span>Adquirir Panel Básico (${{ number_format($seller->basic_panel_price, 0, ',', '.') }}/mes)</span>
-                    </a>
-                    @endif
+                    </button>
                     @if($seller->referral_code)
                     <div class="text-center">
                         <a href="{{ route('affiliate.register', $seller->referral_code) }}" class="text-[11px] text-amber-300/80 hover:text-amber-200 hover:underline font-mono inline-flex items-center gap-1">
@@ -409,12 +403,10 @@
                 </div>
 
                 <div class="pt-6 mt-6 border-t border-slate-800 space-y-2">
-                    @if($supportWhatsapp)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $supportWhatsapp) }}?text=Hola%20{{ urlencode($brandName) }},%20quisiera%20solicitar%20la%20activaci%C3%B3n%20de%20un%20PANEL%20PRO%20por%20${{ number_format($seller->pro_panel_price, 0) }}." target="_blank" class="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-600/30 cursor-pointer">
-                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <button type="button" @click="openPanelModal('pro', {{ (float)$seller->pro_panel_price }}, 'Panel Franquicia PRO Ilimitado')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-600/30 cursor-pointer">
+                        <i data-lucide="gem" class="w-4 h-4"></i>
                         <span>Adquirir Panel PRO (${{ number_format($seller->pro_panel_price, 0, ',', '.') }}/mes)</span>
-                    </a>
-                    @endif
+                    </button>
                     @if($seller->referral_code)
                     <div class="text-center">
                         <a href="{{ route('affiliate.register', $seller->referral_code) }}" class="text-[11px] text-purple-300/80 hover:text-purple-200 hover:underline font-mono inline-flex items-center gap-1">
@@ -1548,11 +1540,18 @@
                             <!-- Header Carrito -->
                             <div class="p-6 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-                                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                                    </div>
+                                    <template x-if="cartStep === 'checkout'">
+                                        <button type="button" @click="cartStep = 'items'" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer" title="Volver a los items">
+                                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                        </button>
+                                    </template>
+                                    <template x-if="cartStep === 'items'">
+                                        <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                        </div>
+                                    </template>
                                     <div>
-                                        <h2 class="text-base font-black text-white">Tu Carrito de Cuentas</h2>
+                                        <h2 class="text-base font-black text-white" x-text="cartStep === 'checkout' ? 'Finalizar Pedido en Panel' : 'Tu Carrito de Cuentas'"></h2>
                                         <span class="text-xs text-slate-400">
                                             <span x-text="totalItems"></span> <span x-text="totalItems === 1 ? 'cuenta seleccionada' : 'cuentas seleccionadas'"></span>
                                         </span>
@@ -1563,105 +1562,397 @@
                                 </button>
                             </div>
 
-                            <!-- Banner Combo Dentro del Carrito -->
-                            <div class="p-4 border-b border-slate-800"
-                                 :class="isComboApplied ? 'bg-emerald-950/40 border-emerald-500/30' : 'bg-slate-950/60'">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-xs font-bold" :class="isComboApplied ? 'text-emerald-400' : 'text-amber-400'">
-                                        <span x-show="!isComboApplied">💡 Agrega <span x-text="itemsNeededForCombo"></span> cuenta(s) más para activar Combo.</span>
-                                        <span x-show="isComboApplied" x-cloak>🎉 ¡Descuento Combo Aplicado!</span>
-                                    </span>
-                                    <span x-show="isComboApplied" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/40">
-                                        -<span x-text="formatMoney(comboDiscount)"></span> OFF
-                                    </span>
+                            <!-- VISTA PASO 1: LISTA DE ITEMS -->
+                            <div x-show="cartStep === 'items'" class="flex-1 flex flex-col overflow-hidden">
+                                <!-- Banner Combo Dentro del Carrito -->
+                                <div class="p-4 border-b border-slate-800"
+                                     :class="isComboApplied ? 'bg-emerald-950/40 border-emerald-500/30' : 'bg-slate-950/60'">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-xs font-bold" :class="isComboApplied ? 'text-emerald-400' : 'text-amber-400'">
+                                            <span x-show="!isComboApplied">💡 Agrega <span x-text="itemsNeededForCombo"></span> cuenta(s) más para activar Combo.</span>
+                                            <span x-show="isComboApplied" x-cloak>🎉 ¡Descuento Combo Aplicado!</span>
+                                        </span>
+                                        <span x-show="isComboApplied" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/40">
+                                            -<span x-text="formatMoney(comboDiscount)"></span> OFF
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">
+                                        Combina plataformas diferentes y ahorras automáticamente en tu pedido.
+                                    </p>
                                 </div>
-                                <p class="text-[11px] text-slate-400 mt-1">
-                                    Combina plataformas diferentes (Netflix, Max, Disney) y ahorras automáticamente en tu pedido.
-                                </p>
+
+                                <!-- Lista de Items en Carrito -->
+                                <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                                    <template x-if="cart.length === 0">
+                                        <div class="py-16 text-center space-y-3">
+                                            <div class="w-14 h-14 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center mx-auto">
+                                                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                                            </div>
+                                            <p class="text-sm font-semibold text-slate-400">Tu carrito está vacío</p>
+                                            <p class="text-xs text-slate-500">Agrega servicios de streaming del catálogo para armar tu pedido o combo.</p>
+                                        </div>
+                                    </template>
+
+                                    <template x-for="item in cart" :key="item.planId">
+                                        <div class="p-4 rounded-2xl bg-[#0b0f19] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-colors">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0"
+                                                     :style="'background-color: ' + (item.color || '#E50914')">
+                                                    <span x-text="item.serviceName ? item.serviceName.substring(0, 2) : 'ST'"></span>
+                                                </div>
+                                                <div>
+                                                    <strong class="text-xs font-bold text-white block" x-text="item.serviceName"></strong>
+                                                    <span class="text-[11px] text-slate-400 block line-clamp-1" x-text="item.planName"></span>
+                                                    <span class="text-xs font-black text-emerald-400 font-mono mt-0.5 block" x-text="formatMoney(item.price)"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <!-- Selector de cantidad -->
+                                                <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl p-0.5">
+                                                    <button type="button" @click="updateQty(item.planId, -1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-xs cursor-pointer">-</button>
+                                                    <span class="px-2 text-xs font-mono font-bold text-white" x-text="item.qty"></span>
+                                                    <button type="button" @click="updateQty(item.planId, 1)" class="w-6 h-6 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center justify-center text-xs cursor-pointer">+</button>
+                                                </div>
+
+                                                <!-- Botón Eliminar -->
+                                                <button type="button" @click="removeFromCart(item.planId)" class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer" title="Quitar">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Footer Resumen Paso 1 -->
+                                <div class="p-6 bg-slate-950 border-t border-slate-800 space-y-4" x-show="cart.length > 0">
+                                    <div class="space-y-2 text-xs font-mono">
+                                        <div class="flex justify-between text-slate-400">
+                                            <span>Subtotal (<span x-text="totalItems"></span> cuentas):</span>
+                                            <span class="text-white" x-text="formatMoney(subtotal)"></span>
+                                        </div>
+                                        <div x-show="isComboApplied" class="flex justify-between text-emerald-400 font-bold">
+                                            <span>🔥 Descuento Combo:</span>
+                                            <span>-<span x-text="formatMoney(comboDiscount)"></span></span>
+                                        </div>
+                                        <div class="pt-2 border-t border-slate-800 flex justify-between items-baseline text-sm">
+                                            <span class="font-bold text-white font-sans text-xs uppercase tracking-wider">Total a Pagar:</span>
+                                            <span class="text-xl font-black text-emerald-400" x-text="formatMoney(finalTotal)"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botón Continuar a Checkout -->
+                                    <button type="button" @click="cartStep = 'checkout'"
+                                            class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/30 transition-all cursor-pointer">
+                                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                                        <span>Completar Pedido (<span x-text="formatMoney(finalTotal)"></span>)</span>
+                                    </button>
+
+                                    <div class="flex items-center justify-between pt-1">
+                                        <button type="button" @click="clearCart()" class="text-[11px] text-slate-500 hover:text-red-400 font-mono transition-colors cursor-pointer">
+                                            Vaciar carrito
+                                        </button>
+                                        <button type="button" @click="openCartDrawer = false" class="text-[11px] text-sky-400 hover:underline font-mono transition-colors cursor-pointer">
+                                            + Agregar más cuentas
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Lista de Items en Carrito -->
-                            <div class="flex-1 overflow-y-auto p-6 space-y-4">
-                                <template x-if="cart.length === 0">
-                                    <div class="py-16 text-center space-y-3">
-                                        <div class="w-14 h-14 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center mx-auto">
-                                            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
-                                        </div>
-                                        <p class="text-sm font-semibold text-slate-400">Tu carrito está vacío</p>
-                                        <p class="text-xs text-slate-500">Agrega servicios de streaming del catálogo para armar tu pedido o combo.</p>
-                                    </div>
-                                </template>
-
-                                <template x-for="item in cart" :key="item.planId">
-                                    <div class="p-4 rounded-2xl bg-[#0b0f19] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-colors">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0"
-                                                 :style="'background-color: ' + (item.color || '#E50914')">
-                                                <span x-text="item.serviceName ? item.serviceName.substring(0, 2) : 'ST'"></span>
-                                            </div>
-                                            <div>
-                                                <strong class="text-xs font-bold text-white block" x-text="item.serviceName"></strong>
-                                                <span class="text-[11px] text-slate-400 block line-clamp-1" x-text="item.planName"></span>
-                                                <span class="text-xs font-black text-emerald-400 font-mono mt-0.5 block" x-text="formatMoney(item.price)"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <!-- Selector de cantidad -->
-                                            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl p-0.5">
-                                                <button type="button" @click="updateQty(item.planId, -1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-xs cursor-pointer">-</button>
-                                                <span class="px-2 text-xs font-mono font-bold text-white" x-text="item.qty"></span>
-                                                <button type="button" @click="updateQty(item.planId, 1)" class="w-6 h-6 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center justify-center text-xs cursor-pointer">+</button>
-                                            </div>
-
-                                            <!-- Botón Eliminar -->
-                                            <button type="button" @click="removeFromCart(item.planId)" class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer" title="Quitar">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            <!-- Footer Resumen y Botón de Pago -->
-                            <div class="p-6 bg-slate-950 border-t border-slate-800 space-y-4" x-show="cart.length > 0">
-                                <!-- Desglose -->
-                                <div class="space-y-2 text-xs font-mono">
+                            <!-- VISTA PASO 2: FORMULARIO DE CHECKOUT (REGISTRO AUTOMÁTICO EN PANEL) -->
+                            <div x-show="cartStep === 'checkout'" class="flex-1 overflow-y-auto p-6 space-y-4">
+                                <!-- Resumen superior de la orden -->
+                                <div class="p-4 rounded-2xl bg-[#0b0f19] border border-slate-800 space-y-2 font-mono text-xs">
                                     <div class="flex justify-between text-slate-400">
-                                        <span>Subtotal (<span x-text="totalItems"></span> cuentas):</span>
+                                        <span>Cuentas seleccionadas:</span>
+                                        <span class="text-white font-bold" x-text="totalItems"></span>
+                                    </div>
+                                    <div class="flex justify-between text-slate-400">
+                                        <span>Subtotal:</span>
                                         <span class="text-white" x-text="formatMoney(subtotal)"></span>
                                     </div>
                                     <div x-show="isComboApplied" class="flex justify-between text-emerald-400 font-bold">
                                         <span>🔥 Descuento Combo:</span>
-                                        <span>-<span x-text="formatMoney(comboDiscount)"></span></span>
+                                        <span x-text="'-' + formatMoney(comboDiscount)"></span>
                                     </div>
                                     <div class="pt-2 border-t border-slate-800 flex justify-between items-baseline text-sm">
-                                        <span class="font-bold text-white font-sans text-xs uppercase tracking-wider">Total a Pagar:</span>
-                                        <span class="text-xl font-black text-emerald-400" x-text="formatMoney(finalTotal)"></span>
+                                        <span class="font-bold text-white font-sans text-xs uppercase">Total a Abonar:</span>
+                                        <span class="text-lg font-black text-emerald-400" x-text="formatMoney(finalTotal)"></span>
                                     </div>
                                 </div>
 
-                                <!-- Botón Comprar por WhatsApp -->
-                                @if($supportWhatsapp)
-                                <a :href="whatsappCheckoutUrl" target="_blank"
-                                   class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/30 transition-all cursor-pointer">
-                                    <i data-lucide="message-circle" class="w-5 h-5"></i>
-                                    <span>Pedir Combo por WhatsApp (<span x-text="formatMoney(finalTotal)"></span>)</span>
-                                </a>
-                                @endif
+                                <form action="{{ route('catalog.cart.process') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                    @csrf
+                                    <input type="hidden" name="seller_id" value="{{ $seller->id }}">
+                                    <input type="hidden" name="cart_items" :value="JSON.stringify(cart)">
 
-                                <div class="flex items-center justify-between pt-1">
-                                    <button type="button" @click="clearCart()" class="text-[11px] text-slate-500 hover:text-red-400 font-mono transition-colors cursor-pointer">
-                                        Vaciar carrito
-                                    </button>
-                                    <button type="button" @click="openCartDrawer = false" class="text-[11px] text-sky-400 hover:underline font-mono transition-colors cursor-pointer">
-                                        + Agregar más cuentas
-                                    </button>
-                                </div>
+                                    <!-- Nombre -->
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Nombre y Apellido *</label>
+                                        <input type="text" name="customer_name" required placeholder="Ej: Juan Pérez" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none transition-colors">
+                                    </div>
+
+                                    <!-- WhatsApp -->
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Teléfono / WhatsApp *</label>
+                                        <input type="tel" name="customer_phone" required placeholder="Ej: +54 9 11 1234-5678" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none transition-colors">
+                                        <span class="text-[10px] text-slate-500 block">Identificador principal para el ingreso a tu Bóveda Privada.</span>
+                                    </div>
+
+                                    <!-- Correo -->
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Correo Electrónico (Opcional)</label>
+                                        <input type="email" name="customer_email" placeholder="tu@correo.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none transition-colors">
+                                    </div>
+
+                                    <!-- PIN de Bóveda -->
+                                    <div class="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-1.5">
+                                        <label class="text-[11px] font-bold text-cyan-300 uppercase flex items-center gap-1.5">
+                                            <i data-lucide="key" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                            <span>PIN de Bóveda (4 dígitos) *</span>
+                                        </label>
+                                        <input type="password" name="boveda_pin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="1234" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-cyan-500/40 text-center text-sm font-mono tracking-widest text-cyan-300 placeholder-slate-600 focus:border-cyan-400 focus:outline-none transition-colors">
+                                        <span class="text-[10px] text-slate-400 block leading-tight">Crea tu PIN de 4 números para ver tus cuentas y renovaciones en tu Bóveda.</span>
+                                    </div>
+
+                                    <!-- Método de Pago -->
+                                    <div class="space-y-2">
+                                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Método de Pago *</label>
+                                        <div class="grid grid-cols-1 gap-2">
+                                            <label class="p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-colors"
+                                                   :class="cartPaymentMethod === 'bank_transfer' ? 'border-amber-500/60 bg-amber-500/10' : ''">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="bank_transfer" x-model="cartPaymentMethod" class="text-amber-500 focus:ring-0">
+                                                    <div>
+                                                        <span class="text-xs font-bold text-white block">Transferencia Bancaria</span>
+                                                        <span class="text-[10px] text-slate-400 block">Alias / CBU / CVU</span>
+                                                    </div>
+                                                </div>
+                                                <i data-lucide="credit-card" class="w-4 h-4 text-amber-400"></i>
+                                            </label>
+
+                                            <label class="p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-colors"
+                                                   :class="cartPaymentMethod === 'mercadopago' ? 'border-sky-500/60 bg-sky-500/10' : ''">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="mercadopago" x-model="cartPaymentMethod" class="text-sky-500 focus:ring-0">
+                                                    <div>
+                                                        <span class="text-xs font-bold text-white block">Mercado Pago</span>
+                                                        <span class="text-[10px] text-slate-400 block">Dinero en cuenta o tarjetas</span>
+                                                    </div>
+                                                </div>
+                                                <i data-lucide="zap" class="w-4 h-4 text-sky-400"></i>
+                                            </label>
+
+                                            <label class="p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-colors"
+                                                   :class="cartPaymentMethod === 'binance' ? 'border-amber-400/60 bg-amber-400/10' : ''">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="binance" x-model="cartPaymentMethod" class="text-amber-400 focus:ring-0">
+                                                    <div>
+                                                        <span class="text-xs font-bold text-white block">Binance Pay (Cripto / USDT)</span>
+                                                        <span class="text-[10px] text-slate-400 block">Pago internacional</span>
+                                                    </div>
+                                                </div>
+                                                <i data-lucide="bitcoin" class="w-4 h-4 text-amber-400"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Datos Bancarios si selecciona transferencia -->
+                                    <div x-show="cartPaymentMethod === 'bank_transfer'" class="p-3.5 rounded-2xl bg-[#0b0f19] border border-amber-500/30 space-y-2 text-xs">
+                                        <span class="text-[10px] uppercase font-bold text-amber-400 block">Datos de Transferencia:</span>
+                                        @if($seller->bank_alias)
+                                            <div class="flex justify-between items-center text-slate-300">
+                                                <span class="text-[10px] text-slate-400">Alias:</span>
+                                                <code class="font-mono text-amber-300 font-bold select-all">{{ $seller->bank_alias }}</code>
+                                            </div>
+                                        @endif
+                                        @if($seller->bank_cbu)
+                                            <div class="flex justify-between items-center text-slate-300">
+                                                <span class="text-[10px] text-slate-400">CBU/CVU:</span>
+                                                <code class="font-mono text-slate-300 select-all">{{ $seller->bank_cbu }}</code>
+                                            </div>
+                                        @endif
+                                        @if($seller->bank_account_holder)
+                                            <div class="flex justify-between items-center text-slate-300">
+                                                <span class="text-[10px] text-slate-400">Titular:</span>
+                                                <span class="text-white font-bold">{{ $seller->bank_account_holder }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Comprobante opcional -->
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Comprobante de Pago (Opcional)</label>
+                                        <input type="file" name="receipt" accept="image/*,application/pdf" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
+                                        <span class="text-[10px] text-slate-500 block">Puedes adjuntarlo ahora o enviarlo directamente a soporte por WhatsApp con tu código de orden.</span>
+                                    </div>
+
+                                    <!-- Botón de Envío -->
+                                    <div class="pt-2">
+                                        <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/30 transition-all cursor-pointer">
+                                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                                            <span>Registrar Pedido en el Sistema</span>
+                                        </button>
+                                        <p class="text-[10px] text-center text-slate-500 mt-2">
+                                            Tu pedido queda registrado automáticamente. Al finalizar, podrás enviar el comprobante a soporte por WhatsApp.
+                                        </p>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL PARA ADQUIRIR PANEL FRANQUICIA (REGISTRO EN PANEL) -->
+    <!-- ======================================================== -->
+    <div x-cloak x-show="openPanelModalState" class="relative z-50" aria-labelledby="modal-panel-title" role="dialog" aria-modal="true">
+        <div x-show="openPanelModalState"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="openPanelModalState = false"
+             class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 flex items-center justify-center">
+            <div x-show="openPanelModalState"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative transform overflow-hidden rounded-3xl bg-slate-900 border border-purple-500/40 text-left shadow-2xl transition-all w-full max-w-lg p-6 sm:p-8 space-y-6">
+
+                <!-- Header Modal -->
+                <div class="flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase">
+                            Franquicia de Paneles
+                        </span>
+                        <h3 class="text-xl font-black text-white" x-text="selectedPanelTitle"></h3>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span class="text-2xl font-black text-purple-400 font-mono" x-text="formatMoney(selectedPanelPrice)"></span>
+                            <span class="text-xs text-slate-400 font-mono">/ mes</span>
+                        </div>
+                    </div>
+                    <button type="button" @click="openPanelModalState = false" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Formulario -->
+                <form action="{{ route('catalog.panel.process') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    <input type="hidden" name="seller_id" value="{{ $seller->id }}">
+                    <input type="hidden" name="panel_type" :value="selectedPanelType">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Nombre -->
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-300 uppercase block">Nombre Completo *</label>
+                            <input type="text" name="customer_name" required placeholder="Tu nombre o negocio" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors">
+                        </div>
+
+                        <!-- WhatsApp -->
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-slate-300 uppercase block">Teléfono / WhatsApp *</label>
+                            <input type="tel" name="customer_phone" required placeholder="+54 9 11 ..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Correo Electrónico (Para tu Panel) *</label>
+                        <input type="email" name="customer_email" required placeholder="tu@correo.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors">
+                    </div>
+
+                    <!-- PIN de Acceso Inicial -->
+                    <div class="p-3.5 rounded-2xl bg-purple-950/20 border border-purple-500/30 space-y-1.5">
+                        <label class="text-[11px] font-bold text-purple-300 uppercase flex items-center gap-1.5">
+                            <i data-lucide="key" class="w-3.5 h-3.5 text-purple-400"></i>
+                            <span>PIN / Clave Inicial de Acceso (4 dígitos) *</span>
+                        </label>
+                        <input type="password" name="boveda_pin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="1234" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-purple-500/40 text-center text-sm font-mono tracking-widest text-purple-300 placeholder-slate-600 focus:border-purple-400 focus:outline-none transition-colors">
+                        <span class="text-[10px] text-slate-400 block leading-tight">Clave inicial para ingresar a tu panel de administración.</span>
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Método de Pago *</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <label class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex flex-col justify-center items-center text-center cursor-pointer transition-colors"
+                                   :class="panelPaymentMethod === 'bank_transfer' ? 'border-purple-500 bg-purple-500/10' : ''">
+                                <input type="radio" name="payment_method" value="bank_transfer" x-model="panelPaymentMethod" class="sr-only">
+                                <i data-lucide="credit-card" class="w-4 h-4 text-purple-400 mb-1"></i>
+                                <span class="text-[11px] font-bold text-white">Transferencia</span>
+                                <span class="text-[9px] text-slate-400 font-mono">CBU / Alias</span>
+                            </label>
+
+                            <label class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex flex-col justify-center items-center text-center cursor-pointer transition-colors"
+                                   :class="panelPaymentMethod === 'mercadopago' ? 'border-sky-500 bg-sky-500/10' : ''">
+                                <input type="radio" name="payment_method" value="mercadopago" x-model="panelPaymentMethod" class="sr-only">
+                                <i data-lucide="zap" class="w-4 h-4 text-sky-400 mb-1"></i>
+                                <span class="text-[11px] font-bold text-white">Mercado Pago</span>
+                                <span class="text-[9px] text-slate-400 font-mono">Saldo / Tarjeta</span>
+                            </label>
+
+                            <label class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex flex-col justify-center items-center text-center cursor-pointer transition-colors"
+                                   :class="panelPaymentMethod === 'binance' ? 'border-amber-400 bg-amber-400/10' : ''">
+                                <input type="radio" name="payment_method" value="binance" x-model="panelPaymentMethod" class="sr-only">
+                                <i data-lucide="bitcoin" class="w-4 h-4 text-amber-400 mb-1"></i>
+                                <span class="text-[11px] font-bold text-white">Binance</span>
+                                <span class="text-[9px] text-slate-400 font-mono">USDT / Cripto</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Datos Bancarios -->
+                    <div x-show="panelPaymentMethod === 'bank_transfer'" class="p-3.5 rounded-2xl bg-[#0b0f19] border border-purple-500/30 space-y-2 text-xs">
+                        <span class="text-[10px] uppercase font-bold text-purple-400 block">Datos de Transferencia:</span>
+                        @if($seller->bank_alias)
+                            <div class="flex justify-between items-center text-slate-300">
+                                <span class="text-[10px] text-slate-400">Alias:</span>
+                                <code class="font-mono text-amber-300 font-bold select-all">{{ $seller->bank_alias }}</code>
+                            </div>
+                        @endif
+                        @if($seller->bank_cbu)
+                            <div class="flex justify-between items-center text-slate-300">
+                                <span class="text-[10px] text-slate-400">CBU/CVU:</span>
+                                <code class="font-mono text-slate-300 select-all">{{ $seller->bank_cbu }}</code>
+                            </div>
+                        @endif
+                        @if($seller->bank_account_holder)
+                            <div class="flex justify-between items-center text-slate-300">
+                                <span class="text-[10px] text-slate-400">Titular:</span>
+                                <span class="text-white font-bold">{{ $seller->bank_account_holder }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Comprobante opcional -->
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-300 uppercase block">Comprobante de Pago (Opcional)</label>
+                        <input type="file" name="receipt" accept="image/*,application/pdf" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
+                    </div>
+
+                    <!-- Botón Enviar -->
+                    <div class="pt-2">
+                        <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-purple-600/30 transition-all cursor-pointer">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            <span>Registrar Solicitud en el Sistema</span>
+                        </button>
+                        <p class="text-[10px] text-center text-slate-500 mt-2">
+                            Al registrarte, la solicitud queda asentada en el panel y podrás enviar el comprobante a soporte por WhatsApp para la activación.
+                        </p>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1673,6 +1964,13 @@ function catalogApp() {
     return {
         openFaq: null,
         openCartDrawer: false,
+        cartStep: 'items',
+        cartPaymentMethod: 'bank_transfer',
+        openPanelModalState: false,
+        selectedPanelType: 'basic',
+        selectedPanelPrice: {{ (float)$seller->basic_panel_price }},
+        selectedPanelTitle: 'Panel Franquicia Básico',
+        panelPaymentMethod: 'bank_transfer',
         cart: [],
         comboConfig: {
             enabled: {{ $seller && $seller->isComboDiscountActive() ? 'true' : 'false' }},
@@ -1692,6 +1990,18 @@ function catalogApp() {
             } catch (e) {
                 this.cart = [];
             }
+            this.$nextTick(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+        },
+
+        openPanelModal(type, price, title) {
+            this.selectedPanelType = type;
+            this.selectedPanelPrice = price;
+            this.selectedPanelTitle = title;
+            this.openPanelModalState = true;
             this.$nextTick(() => {
                 if (window.lucide) {
                     window.lucide.createIcons();
@@ -1732,6 +2042,7 @@ function catalogApp() {
                 });
             }
             this.saveCart();
+            this.cartStep = 'items';
             this.openCartDrawer = true;
         },
 

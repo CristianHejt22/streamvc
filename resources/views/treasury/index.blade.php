@@ -107,12 +107,35 @@
                         </td>
 
                         <td class="py-3.5 px-4">
-                            <span class="font-bold text-white">{{ $order->servicePlan ? $order->servicePlan->name : 'N/A' }}</span>
-                            <span class="text-[10px] block text-cyan-400">{{ $order->servicePlan && $order->servicePlan->service ? $order->servicePlan->service->name : '' }}</span>
+                            @if($order->isPanelOrder())
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                    💎 Panel {{ $order->order_type === 'panel_pro' ? 'PRO ILIMITADO' : 'BÁSICO (10 Servicios)' }}
+                                </span>
+                                <span class="text-[11px] block text-white font-bold mt-0.5">Solicitud de Activación de Panel</span>
+                            @elseif($order->isCartOrder() && is_array($order->items_payload) && count($order->items_payload) > 1)
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                        🛒 Combo ({{ count($order->items_payload) }} cuentas)
+                                    </span>
+                                </div>
+                                <div class="text-[10px] text-gray-300 mt-1 space-y-0.5">
+                                    @foreach($order->items_payload as $it)
+                                    <div>• {{ $it['qty'] }}x {{ $it['serviceName'] ?? 'Streaming' }} ({{ $it['planName'] ?? '' }})</div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="font-bold text-white">{{ $order->servicePlan ? $order->servicePlan->name : 'Streaming' }}</span>
+                                <span class="text-[10px] block text-cyan-400">{{ $order->servicePlan && $order->servicePlan->service ? $order->servicePlan->service->name : '' }}</span>
+                            @endif
                         </td>
 
                         <td class="py-3.5 px-4">
-                            <span class="font-black text-sm text-emerald-400">${{ number_format($order->amount, 2) }}</span>
+                            <span class="font-black text-sm text-emerald-400 font-mono">${{ number_format($order->amount, 0, ',', '.') }}</span>
+                            @if((float)$order->discount_amount > 0)
+                                <div class="text-[10px] text-amber-400 font-mono">
+                                    🔥 -${{ number_format($order->discount_amount, 0, ',', '.') }} Combo
+                                </div>
+                            @endif
                         </td>
 
                         <td class="py-3.5 px-4">

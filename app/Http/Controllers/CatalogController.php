@@ -168,6 +168,188 @@ class CatalogController extends Controller
         }
     }
 
+    public function processCartCheckout(Request $request)
+    {
+        $request->validate([
+            'seller_id' => 'required|exists:users,id',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:50',
+            'customer_email' => 'nullable|email|max:255',
+            'boveda_pin' => 'required|string|size:4|regex:/^[0-9]{4}$/',
+            'payment_method' => 'required|in:bank_transfer,mercadopago,binance',
+            'cart_items' => 'required',
+            'receipt' => 'nullable|file|mimes:jpeg,png,jpg,pdf,webp,svg|max:10240',
+        ], [
+            'boveda_pin.required' => 'El PIN de seguridad de tu Bóveda es obligatorio para entregarte las credenciales.',
+            'boveda_pin.size' => 'El PIN de la Bóveda debe tener exactamente 4 dígitos numéricos.',
+            'boveda_pin.regex' => 'El PIN de la Bóveda solo debe contener números del 0 al 9.',
+            'cart_items.required' => 'El carrito está vacío. Agrega al menos una cuenta para continuar.',
+        ]);
+
+        $seller = User::findOrFail($request->seller_id);
+
+        $items = is_array($request->cart_items) ? $request->cart_items : json_decode($request->cart_items, true);
+        if (empty($items) || !is_array($items)) {
+            return back()->with('error', 'El carrito está vacío o contiene datos inválidos.');
+        }
+
+        // Calcular subtotal y verificar items
+        $subtotal = 0.00;
+        $totalCount = 0;
+        $sanitizedItems = [];
+        $firstPlanId = null;
+
+        foreach ($items as $item) {
+            $planId = $item['planId'] ?? null;
+            $qty = max(1, (int) ($item['qty'] ?? 1));
+            $plan = ServicePlan::with('service')->find($planId);
+            if ($plan) {
+                if (!$firstPlanId) {
+                    $firstPlanId = $plan->id;
+                }
+                $price = (float) $plan->price;
+
+                // Revisar si el revendedor tiene PVP personalizado
+                if ($seller->isReseller()) {
+                    $customPvp = \App\Models\ResellerPlanPrice::where('reseller_id', $seller->id)
+                        ->where('service_plan_id', $plan->id)
+                        ->value('reseller_pvp');
+                    if ($customPvp !== null && (float) $customPvp > 0) {
+                        $price = (float) $customPvp;
+                    }
+                }
+
+                $itemSubtotal = $price * $qty;
+                $subtotal += $itemSubtotal;
+                $totalCount += $qty;
+
+                $sanitizedItems[] = [
+                    'planId' => $plan->id,
+                    'serviceId' => $plan->service_id,
+                    'serviceName' => $plan->service->name ?? 'Streaming',
+                    'planName' => $plan->name,
+                    'duration_days' => $plan->duration_days,
+                    'modality' => $plan->modality,
+                    'color' => $plan->service->color_hex ?? '#E50914',
+                    'price' => $price,
+                    'qty' => $qty,
+                    'total' => $itemSubtotal,
+                ];
+            }
+        }
+
+        if (empty($sanitizedItems)) {
+            return back()->with('error', 'Ningún plan seleccionado se encuentra activo.');
+        }
+
+        // Calcular descuento de combo
+        $comboDiscount = $seller->calculateComboDiscount($totalCount, $subtotal);
+        $finalTotal = max(0, $subtotal - $comboDiscount);
+
+        // Crear Orden en base de datos
+        $order = new Order();
+        $order->seller_id = $seller->id;
+        $order->service_plan_id = $firstPlanId;
+        $order->customer_name = $request->customer_name;
+        $order->customer_phone = $request->customer_phone;
+        $order->customer_email = $request->customer_email;
+        $order->boveda_pin = $request->boveda_pin;
+        $order->subtotal = $subtotal;
+        $order->discount_amount = $comboDiscount;
+        $order->amount = $finalTotal;
+        $order->order_type = ($totalCount >= 2 && $comboDiscount > 0) ? 'cart_combo' : 'accounts';
+        $order->items_payload = $sanitizedItems;
+        $order->payment_method = $request->payment_method;
+        $order->payment_status = 'pending';
+
+        if ($request->hasFile('receipt')) {
+            $file = $request->file('receipt');
+            $filename = 'recibo_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('receipts_temp', $filename, 'local');
+            $order->receipt_path = $path;
+        }
+
+        $order->notes = "Pedido de carrito con {$totalCount} cuentas. Subtotal: \${$subtotal}. Descuento Combo: \${$comboDiscount}.";
+        $order->save();
+
+        // Crear / Vincular cliente en la base de datos de inmediato con su PIN de Bóveda
+        \App\Models\Customer::updateOrCreate(
+            [
+                'user_id' => $seller->id,
+                'phone' => $request->customer_phone,
+            ],
+            [
+                'name' => $request->customer_name,
+                'email' => $request->customer_email,
+                'boveda_pin' => $request->boveda_pin,
+            ]
+        );
+
+        if ($request->payment_method === 'mercadopago') {
+            return redirect()->route('catalog.mp_redirect', ['order' => $order->order_code]);
+        }
+
+        return redirect()->route('catalog.success', ['order' => $order->order_code])
+            ->with('success', '¡Tu pedido fue registrado en el sistema exitosamente! En breve el vendedor auditará tu pago.');
+    }
+
+    public function processPanelCheckout(Request $request)
+    {
+        $request->validate([
+            'seller_id' => 'required|exists:users,id',
+            'panel_type' => 'required|in:basic,pro',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:50',
+            'customer_email' => 'nullable|email|max:255',
+            'boveda_pin' => 'nullable|string|size:4|regex:/^[0-9]{4}$/',
+            'payment_method' => 'required|in:bank_transfer,mercadopago,binance',
+            'receipt' => 'nullable|file|mimes:jpeg,png,jpg,pdf,webp,svg|max:10240',
+        ]);
+
+        $seller = User::findOrFail($request->seller_id);
+        $panelType = $request->panel_type;
+        $price = $panelType === 'pro' ? $seller->pro_panel_price : $seller->basic_panel_price;
+        $panelTitle = $panelType === 'pro' ? 'Panel Franquicia PRO Ilimitado' : 'Panel Básico (10 Servicios)';
+
+        $order = new Order();
+        $order->seller_id = $seller->id;
+        $order->service_plan_id = null;
+        $order->customer_name = $request->customer_name;
+        $order->customer_phone = $request->customer_phone;
+        $order->customer_email = $request->customer_email;
+        $order->boveda_pin = $request->boveda_pin ?: '0000';
+        $order->subtotal = $price;
+        $order->discount_amount = 0.00;
+        $order->amount = $price;
+        $order->order_type = 'panel_' . $panelType;
+        $order->items_payload = [[
+            'type' => 'panel',
+            'panel_type' => $panelType,
+            'title' => $panelTitle,
+            'price' => $price,
+            'qty' => 1,
+        ]];
+        $order->payment_method = $request->payment_method;
+        $order->payment_status = 'pending';
+
+        if ($request->hasFile('receipt')) {
+            $file = $request->file('receipt');
+            $filename = 'recibo_panel_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('receipts_temp', $filename, 'local');
+            $order->receipt_path = $path;
+        }
+
+        $order->notes = "Solicitud de activación de {$panelTitle} registrada desde la web.";
+        $order->save();
+
+        if ($request->payment_method === 'mercadopago') {
+            return redirect()->route('catalog.mp_redirect', ['order' => $order->order_code]);
+        }
+
+        return redirect()->route('catalog.success', ['order' => $order->order_code])
+            ->with('success', "¡Solicitud de {$panelTitle} registrada en el panel! Comunícate a soporte para la activación inmediata.");
+    }
+
     public function mpRedirect($orderCode)
     {
         $order = Order::with(['seller', 'servicePlan.service'])->where('order_code', $orderCode)->firstOrFail();

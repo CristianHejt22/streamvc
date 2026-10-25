@@ -103,7 +103,11 @@ class TreasuryController extends Controller
             $notes = $request->input('notes', 'Aprobado manualmente desde el panel de tesorería.');
             $sale = $order->approveAndClose($notes);
 
-            return back()->with('success', "¡Orden aprobada exitosamente! Venta {$sale->sale_code} generada, credenciales asignadas del stock y comprobante físico ELIMINADO permanentemente del hosting.");
+            $msg = $sale
+                ? "¡Orden aprobada exitosamente! Venta {$sale->sale_code} generada, credenciales asignadas del stock y comprobante físico ELIMINADO permanentemente del hosting."
+                : "¡Orden de panel aprobada exitosamente! La franquicia fue activada y el comprobante purgado de la Mini Nube.";
+
+            return back()->with('success', $msg);
         } catch (\Exception $e) {
             return back()->with('error', 'Error al aprobar la orden: ' . $e->getMessage());
         }
