@@ -51,5 +51,8 @@ if (empty($currentHost) || str_contains($currentHost, 'clever-cloud') || str_con
     $_SERVER['DB_HOST'] = $pooler;
 }
 
+// Normalizar SCRIPT_NAME para que Symfony/Laravel determine correctamente la URL base sin prefijos
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+
 // Redirigir la petición al Front Controller de Laravel
 require __DIR__ . '/../public/index.php';

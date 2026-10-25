@@ -10,7 +10,7 @@
   },
   "routes": [
     {
-      "src": "/(build|css|js|images|storage|sw.js|icon-.*|screenshot-.*|favicon.ico|robots.txt)(.*)",
+      "src": "/(build|css|js|images|storage|manifest.json|sw.js|icon-.*|screenshot-.*|favicon.ico|robots.txt)(.*)",
       "dest": "/public/$1$2"
     },
     {
