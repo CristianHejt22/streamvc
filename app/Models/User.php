@@ -57,6 +57,11 @@ class User extends Authenticatable
         'panel_basic_sale_price',
         'panel_pro_sale_price',
         'offer_panels_on_catalog',
+        'combo_discount_enabled',
+        'combo_min_items',
+        'combo_discount_type',
+        'combo_discount_amount',
+        'combo_banner_text',
     ];
 
     protected $hidden = [
@@ -82,6 +87,9 @@ class User extends Authenticatable
         'panel_basic_sale_price' => 'decimal:2',
         'panel_pro_sale_price' => 'decimal:2',
         'offer_panels_on_catalog' => 'boolean',
+        'combo_discount_enabled' => 'boolean',
+        'combo_min_items' => 'integer',
+        'combo_discount_amount' => 'decimal:2',
     ];
 
     public function setPlainPasswordAttribute(?string $val): void
@@ -343,6 +351,56 @@ class User extends Authenticatable
     public function isPanelSalesOffered(): bool
     {
         return $this->offer_panels_on_catalog !== false;
+    }
+
+    public function isComboDiscountActive(): bool
+    {
+        return (bool) ($this->combo_discount_enabled ?? true);
+    }
+
+    public function getComboMinItems(): int
+    {
+        return max(2, (int) ($this->combo_min_items ?? 2));
+    }
+
+    public function getComboDiscountType(): string
+    {
+        return $this->combo_discount_type === 'percent' ? 'percent' : 'fixed';
+    }
+
+    public function getComboDiscountAmount(): float
+    {
+        return (float) ($this->combo_discount_amount ?? 1000.00);
+    }
+
+    public function getComboBannerText(): string
+    {
+        if (!empty($this->combo_banner_text)) {
+            return $this->combo_banner_text;
+        }
+
+        $min = $this->getComboMinItems();
+        if ($this->getComboDiscountType() === 'percent') {
+            $pct = number_format($this->getComboDiscountAmount(), 0);
+            return "🔥 ¡PROMO COMBOS! Elige {$min} o más cuentas y obtén un {$pct}% de descuento automático en tu carrito.";
+        }
+
+        $amt = number_format($this->getComboDiscountAmount(), 0, ',', '.');
+        return "🔥 ¡PROMO COMBOS! Elige {$min} o más cuentas y ahorra \${$amt} de descuento inmediato en tu pedido.";
+    }
+
+    public function calculateComboDiscount(int $totalItems, float $subtotal): float
+    {
+        if (!$this->isComboDiscountActive() || $totalItems < $this->getComboMinItems()) {
+            return 0.00;
+        }
+
+        if ($this->getComboDiscountType() === 'percent') {
+            $pct = $this->getComboDiscountAmount();
+            return round(($subtotal * ($pct / 100)), 2);
+        }
+
+        return min($subtotal, $this->getComboDiscountAmount());
     }
 
     public function services()

@@ -94,6 +94,21 @@ class WhiteLabelController extends Controller
             }
         }
 
+        // Configuración de Precios de Combos (2 o más cuentas)
+        if ($request->has('combo_discount_settings_submitted') || $user->isWhiteLabelAllowed() || $user->isAdmin()) {
+            $user->combo_discount_enabled = $request->boolean('combo_discount_enabled');
+            if ($request->filled('combo_min_items')) {
+                $user->combo_min_items = max(2, (int) $request->input('combo_min_items'));
+            }
+            if ($request->filled('combo_discount_type')) {
+                $user->combo_discount_type = in_array($request->input('combo_discount_type'), ['fixed', 'percent']) ? $request->input('combo_discount_type') : 'fixed';
+            }
+            if ($request->filled('combo_discount_amount')) {
+                $user->combo_discount_amount = max(0, (float) $request->input('combo_discount_amount'));
+            }
+            $user->combo_banner_text = $request->input('combo_banner_text');
+        }
+
         $user->save();
 
         // Registro de Auditoría y Notificaciones si cambió la preferencia de WhatsApp

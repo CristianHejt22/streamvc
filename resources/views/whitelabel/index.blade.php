@@ -404,6 +404,82 @@
             </div>
             @endif
 
+            <!-- Configuración de Precios de Combos (2 o más cuentas) -->
+            <div class="bg-gray-800/40 border border-amber-500/30 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm shadow-xl">
+                <input type="hidden" name="combo_discount_settings_submitted" value="1">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-gray-700/60">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                            </span>
+                            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                Promoción de Combos Multicuentas (2 o más cuentas)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">NUEVO</span>
+                            </h2>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Aplica descuentos automáticos cuando un mismo cliente agregue 2 o más cuentas a su carrito de compras. Aumenta tu volumen de ventas y ticket promedio.
+                        </p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="combo_discount_enabled" value="1" 
+                            {{ old('combo_discount_enabled', $user->combo_discount_enabled ?? true) ? 'checked' : '' }} 
+                            class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        <span class="ml-3 text-xs font-semibold text-gray-300">Activar Promo Combos</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+                            Mínimo de Cuentas para Activar Combo
+                        </label>
+                        <input type="number" min="2" max="10" name="combo_min_items" 
+                            value="{{ old('combo_min_items', $user->combo_min_items ?? 2) }}" 
+                            class="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white font-mono text-sm focus:ring-2 focus:ring-amber-500">
+                        <span class="text-[10px] text-gray-400 block mt-1">Recomendado: 2 cuentas.</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+                            Tipo de Descuento en Combo
+                        </label>
+                        <select name="combo_discount_type" class="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:ring-2 focus:ring-amber-500">
+                            <option value="fixed" {{ old('combo_discount_type', $user->combo_discount_type ?? 'fixed') === 'fixed' ? 'selected' : '' }}>Monto Fijo en Pesos ($ Descuento)</option>
+                            <option value="percent" {{ old('combo_discount_type', $user->combo_discount_type ?? 'fixed') === 'percent' ? 'selected' : '' }}>Porcentaje de Descuento (%)</option>
+                        </select>
+                        <span class="text-[10px] text-gray-400 block mt-1">Descuento aplicado al total del carrito.</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+                            Valor del Descuento ($ o %)
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="0.01" min="0" name="combo_discount_amount" 
+                                value="{{ old('combo_discount_amount', $user->combo_discount_amount ?? 1000.00) }}" 
+                                class="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white font-mono text-sm focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <span class="text-[10px] text-amber-400 block mt-1 font-mono">
+                            💡 Ejemplo: $1.000 de descuento o 15% al llevar 2+ cuentas.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+                        Texto Promocional para el Banner del Catálogo (Opcional)
+                    </label>
+                    <input type="text" name="combo_banner_text" 
+                        value="{{ old('combo_banner_text', $user->combo_banner_text ?? '') }}" 
+                        placeholder="Ej: 🔥 ¡PROMO COMBOS! Elige 2 o más cuentas y obtén $1.000 de descuento inmediato en tu pedido."
+                        class="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:ring-2 focus:ring-amber-500">
+                </div>
+            </div>
+
             <!-- Botón de Guardar Todo -->
             <div class="pt-4 border-t border-gray-800 flex justify-end">
                 <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2 cursor-pointer">

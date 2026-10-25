@@ -3,12 +3,7 @@
 @section('title', ($seller && $seller->isReseller()) ? ($seller->brand_name ?: $seller->name) . ' | Cuentas Streaming' : 'CStreame Master Platform | Paneles & Cuentas Streaming')
 
 @section('content')
-<div class="space-y-16 pb-16" x-data="{
-    openFaq: null,
-    toggleFaq(id) {
-        this.openFaq = this.openFaq === id ? null : id;
-    }
-}">
+<div class="space-y-16 pb-16" x-data="catalogApp()">
 
     <!-- ======================================================== -->
     <!-- HERO SECTION DINÁMICO (SUPER ADMIN vs REVENDEDOR) -->
@@ -617,6 +612,52 @@
             </div>
         </div>
 
+        <!-- Banner Interactivo de Promoción de Combos Multicuentas -->
+        @if($seller && $seller->isComboDiscountActive())
+        <div class="rounded-3xl p-5 sm:p-6 border transition-all duration-300 relative overflow-hidden shadow-2xl"
+             :class="isComboApplied ? 'bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/80 border-emerald-500/60 shadow-emerald-900/30' : 'bg-gradient-to-r from-amber-950/60 via-slate-900 to-slate-900 border-amber-500/40 shadow-amber-950/20'">
+            <!-- Glow background -->
+            <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-20"
+                 :class="isComboApplied ? 'bg-emerald-400' : 'bg-amber-400'"></div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                <div class="space-y-1.5">
+                    <div class="inline-flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5"
+                              :class="isComboApplied ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'">
+                            <span class="w-2 h-2 rounded-full animate-ping" :class="isComboApplied ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+                            <span x-text="isComboApplied ? '🎉 ¡PROMO COMBO APLICADA!' : '🔥 PROMO COMBO MULTICUENTAS'"></span>
+                        </span>
+                        <span class="text-xs text-slate-400 hidden sm:inline">• Elige y combina las plataformas que quieras</span>
+                    </div>
+                    
+                    <h3 class="text-lg sm:text-xl font-black text-white">
+                        <span x-show="!isComboApplied">{{ $seller->getComboBannerText() }}</span>
+                        <span x-show="isComboApplied" x-cloak class="text-emerald-400">
+                            ¡Felicidades! Tienes <span x-text="totalItems"></span> cuentas en tu carrito y ahorras <span x-text="formatMoney(comboDiscount)"></span> de descuento inmediato.
+                        </span>
+                    </h3>
+
+                    <p class="text-xs text-slate-400">
+                        <span x-show="totalItems === 0">Agrega tus cuentas favoritas al carrito con el botón <strong>"+ Carrito"</strong> para armar tu combo.</span>
+                        <span x-show="totalItems === 1" x-cloak class="text-amber-300 font-semibold">✨ ¡Te falta solo 1 cuenta más para desbloquear el descuento de combo!</span>
+                        <span x-show="isComboApplied" x-cloak class="text-emerald-300">Descuento aplicado en tiempo real sobre tu total. Puedes sumar más cuentas para maximizar tu ahorro.</span>
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                    <button type="button" @click="openCartDrawer = true" 
+                            class="px-5 py-3 rounded-2xl font-bold text-xs flex items-center gap-2.5 transition-all shadow-xl cursor-pointer"
+                            :class="isComboApplied ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/30' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/30'">
+                        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                        <span>Ver Carrito (<span x-text="totalItems"></span>)</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-black/20 font-mono text-[11px]" x-text="formatMoney(finalTotal)"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Grid de Servicios -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($services as $serv)
@@ -654,20 +695,43 @@
                         {{ $serv->description ?: 'Disfruta de tus películas y series favoritas con perfiles privados o cuenta completa.' }}
                     </p>
 
-                    <!-- Planes de la Plataforma -->
+                    <!-- Planes de la Plataforma con Soporte de Carrito y Combos -->
                     <div class="mt-4 pt-3 border-t border-slate-800/80 space-y-2.5">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Planes Disponibles:</span>
                         @foreach($serv->plans as $plan)
-                        <div class="p-3 rounded-2xl bg-[#0b0f19] border border-slate-800 flex items-center justify-between">
+                        <div class="p-3.5 rounded-2xl bg-[#0b0f19] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-700 transition-all">
                             <div>
                                 <span class="text-xs font-bold text-white block">{{ $plan->name }}</span>
                                 <span class="text-[10px] text-slate-400">{{ $plan->duration_days }} días · {{ $plan->modality === 'profile' ? 'Pantalla con PIN' : 'Cuenta Completa' }}</span>
                             </div>
-                            <div class="text-right">
-                                <span class="text-base font-black text-emerald-400">${{ number_format($plan->price, 2) }}</span>
-                                <a href="{{ route('catalog.checkout', ['plan' => $plan->id, 'seller_id' => $seller->id]) }}" class="block px-3 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[11px] mt-1 shadow-md shadow-red-600/20 transition-all text-center">
-                                    Adquirir
-                                </a>
+                            <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                                <span class="text-base font-black text-emerald-400 font-mono">${{ number_format($plan->price, 0, ',', '.') }}</span>
+                                
+                                <div class="flex items-center gap-1.5">
+                                    <!-- Botón Agregar al Carrito si no está en carrito -->
+                                    <template x-if="getItemQty({{ $plan->id }}) === 0">
+                                        <button type="button" 
+                                            @click="addToCart({ id: {{ $plan->id }}, name: '{{ addslashes($plan->name) }}', price: {{ (float)$plan->price }}, duration_days: {{ $plan->duration_days }}, modality: '{{ $plan->modality }}' }, { id: {{ $serv->id }}, name: '{{ addslashes($serv->name) }}', color_hex: '{{ $serv->color_hex }}' })" 
+                                            class="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 shadow-md shadow-amber-500/20 transition-all cursor-pointer">
+                                            <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                                            <span>+ Carrito</span>
+                                        </button>
+                                    </template>
+
+                                    <!-- Selector de Cantidad si ya está en carrito -->
+                                    <template x-if="getItemQty({{ $plan->id }}) > 0">
+                                        <div class="flex items-center gap-1 bg-slate-900 border border-amber-500/50 rounded-xl p-0.5 shadow-sm">
+                                            <button type="button" @click="updateQty({{ $plan->id }}, -1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-xs transition-colors cursor-pointer">-</button>
+                                            <span class="px-2 text-xs font-mono font-bold text-amber-400" x-text="getItemQty({{ $plan->id }})"></span>
+                                            <button type="button" @click="updateQty({{ $plan->id }}, 1)" class="w-6 h-6 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center justify-center text-xs transition-colors cursor-pointer">+</button>
+                                        </div>
+                                    </template>
+
+                                    <!-- Botón Comprar Ya Directo -->
+                                    <a href="{{ route('catalog.checkout', ['plan' => $plan->id, 'seller_id' => $seller->id]) }}" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-[11px] border border-slate-700 transition-all text-center">
+                                        Comprar
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         @endforeach
@@ -1412,5 +1476,343 @@
         </div>
     </section>
 
+    <!-- ======================================================== -->
+    <!-- BOTÓN FLOTANTE DEL CARRITO DE COMPRAS -->
+    <!-- ======================================================== -->
+    <div class="fixed bottom-6 right-6 z-40" x-cloak x-show="totalItems > 0"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-4 scale-90"
+         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+         x-transition:leave-end="opacity-0 translate-y-4 scale-90">
+        <button type="button" @click="openCartDrawer = true" 
+                class="group relative flex items-center gap-3 px-5 py-3.5 rounded-full bg-slate-900 border-2 text-white shadow-2xl hover:scale-105 transition-all cursor-pointer backdrop-blur-md"
+                :class="isComboApplied ? 'border-emerald-500 shadow-emerald-500/30' : 'border-amber-500 shadow-amber-500/30'">
+            <!-- Badge contador -->
+            <div class="relative">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-slate-950"
+                     :class="isComboApplied ? 'bg-emerald-400' : 'bg-amber-400'">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                </div>
+                <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white font-mono font-black text-[10px] flex items-center justify-center border-2 border-slate-900"
+                      x-text="totalItems"></span>
+            </div>
+
+            <!-- Texto de carrito y total -->
+            <div class="text-left">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-white uppercase tracking-wider">Ver Carrito</span>
+                    <span x-show="isComboApplied" class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold border border-emerald-500/30">
+                        🔥 COMBO
+                    </span>
+                </div>
+                <div class="flex items-baseline gap-1 font-mono">
+                    <span class="text-sm font-black" :class="isComboApplied ? 'text-emerald-400' : 'text-amber-400'" x-text="formatMoney(finalTotal)"></span>
+                    <span x-show="isComboApplied" class="text-[10px] text-slate-400 line-through" x-text="formatMoney(subtotal)"></span>
+                </div>
+            </div>
+
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
+        </button>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL / DRAWER DESLIZABLE DEL CARRITO DE COMPRAS -->
+    <!-- ======================================================== -->
+    <div x-cloak x-show="openCartDrawer" class="relative z-50" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+        <!-- Backdrop oscuro -->
+        <div x-show="openCartDrawer"
+             x-transition:enter="ease-in-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in-out duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="openCartDrawer = false"
+             class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"></div>
+
+        <div class="fixed inset-0 overflow-hidden">
+            <div class="absolute inset-0 overflow-hidden">
+                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                    <div x-show="openCartDrawer"
+                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-400"
+                         x-transition:enter-start="translate-x-full"
+                         x-transition:enter-end="translate-x-0"
+                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-400"
+                         x-transition:leave-start="translate-x-0"
+                         x-transition:leave-end="translate-x-full"
+                         class="pointer-events-auto w-screen max-w-md">
+                        <div class="flex h-full flex-col bg-slate-900 border-l border-slate-800 shadow-2xl">
+                            
+                            <!-- Header Carrito -->
+                            <div class="p-6 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-base font-black text-white">Tu Carrito de Cuentas</h2>
+                                        <span class="text-xs text-slate-400">
+                                            <span x-text="totalItems"></span> <span x-text="totalItems === 1 ? 'cuenta seleccionada' : 'cuentas seleccionadas'"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <button type="button" @click="openCartDrawer = false" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Banner Combo Dentro del Carrito -->
+                            <div class="p-4 border-b border-slate-800"
+                                 :class="isComboApplied ? 'bg-emerald-950/40 border-emerald-500/30' : 'bg-slate-950/60'">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-xs font-bold" :class="isComboApplied ? 'text-emerald-400' : 'text-amber-400'">
+                                        <span x-show="!isComboApplied">💡 Agrega <span x-text="itemsNeededForCombo"></span> cuenta(s) más para activar Combo.</span>
+                                        <span x-show="isComboApplied" x-cloak>🎉 ¡Descuento Combo Aplicado!</span>
+                                    </span>
+                                    <span x-show="isComboApplied" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/40">
+                                        -<span x-text="formatMoney(comboDiscount)"></span> OFF
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-1">
+                                    Combina plataformas diferentes (Netflix, Max, Disney) y ahorras automáticamente en tu pedido.
+                                </p>
+                            </div>
+
+                            <!-- Lista de Items en Carrito -->
+                            <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                                <template x-if="cart.length === 0">
+                                    <div class="py-16 text-center space-y-3">
+                                        <div class="w-14 h-14 rounded-full bg-slate-800/80 text-slate-500 flex items-center justify-center mx-auto">
+                                            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                                        </div>
+                                        <p class="text-sm font-semibold text-slate-400">Tu carrito está vacío</p>
+                                        <p class="text-xs text-slate-500">Agrega servicios de streaming del catálogo para armar tu pedido o combo.</p>
+                                    </div>
+                                </template>
+
+                                <template x-for="item in cart" :key="item.planId">
+                                    <div class="p-4 rounded-2xl bg-[#0b0f19] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-colors">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0"
+                                                 :style="'background-color: ' + (item.color || '#E50914')">
+                                                <span x-text="item.serviceName ? item.serviceName.substring(0, 2) : 'ST'"></span>
+                                            </div>
+                                            <div>
+                                                <strong class="text-xs font-bold text-white block" x-text="item.serviceName"></strong>
+                                                <span class="text-[11px] text-slate-400 block line-clamp-1" x-text="item.planName"></span>
+                                                <span class="text-xs font-black text-emerald-400 font-mono mt-0.5 block" x-text="formatMoney(item.price)"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <!-- Selector de cantidad -->
+                                            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl p-0.5">
+                                                <button type="button" @click="updateQty(item.planId, -1)" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-xs cursor-pointer">-</button>
+                                                <span class="px-2 text-xs font-mono font-bold text-white" x-text="item.qty"></span>
+                                                <button type="button" @click="updateQty(item.planId, 1)" class="w-6 h-6 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center justify-center text-xs cursor-pointer">+</button>
+                                            </div>
+
+                                            <!-- Botón Eliminar -->
+                                            <button type="button" @click="removeFromCart(item.planId)" class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer" title="Quitar">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Footer Resumen y Botón de Pago -->
+                            <div class="p-6 bg-slate-950 border-t border-slate-800 space-y-4" x-show="cart.length > 0">
+                                <!-- Desglose -->
+                                <div class="space-y-2 text-xs font-mono">
+                                    <div class="flex justify-between text-slate-400">
+                                        <span>Subtotal (<span x-text="totalItems"></span> cuentas):</span>
+                                        <span class="text-white" x-text="formatMoney(subtotal)"></span>
+                                    </div>
+                                    <div x-show="isComboApplied" class="flex justify-between text-emerald-400 font-bold">
+                                        <span>🔥 Descuento Combo:</span>
+                                        <span>-<span x-text="formatMoney(comboDiscount)"></span></span>
+                                    </div>
+                                    <div class="pt-2 border-t border-slate-800 flex justify-between items-baseline text-sm">
+                                        <span class="font-bold text-white font-sans text-xs uppercase tracking-wider">Total a Pagar:</span>
+                                        <span class="text-xl font-black text-emerald-400" x-text="formatMoney(finalTotal)"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Botón Comprar por WhatsApp -->
+                                @if($supportWhatsapp)
+                                <a :href="whatsappCheckoutUrl" target="_blank"
+                                   class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/30 transition-all cursor-pointer">
+                                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                    <span>Pedir Combo por WhatsApp (<span x-text="formatMoney(finalTotal)"></span>)</span>
+                                </a>
+                                @endif
+
+                                <div class="flex items-center justify-between pt-1">
+                                    <button type="button" @click="clearCart()" class="text-[11px] text-slate-500 hover:text-red-400 font-mono transition-colors cursor-pointer">
+                                        Vaciar carrito
+                                    </button>
+                                    <button type="button" @click="openCartDrawer = false" class="text-[11px] text-sky-400 hover:underline font-mono transition-colors cursor-pointer">
+                                        + Agregar más cuentas
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<script>
+function catalogApp() {
+    return {
+        openFaq: null,
+        openCartDrawer: false,
+        cart: [],
+        comboConfig: {
+            enabled: {{ $seller && $seller->isComboDiscountActive() ? 'true' : 'false' }},
+            minItems: {{ $seller ? $seller->getComboMinItems() : 2 }},
+            type: '{{ $seller ? $seller->getComboDiscountType() : 'fixed' }}',
+            amount: {{ $seller ? (float)$seller->getComboDiscountAmount() : 1000.0 }},
+            sellerWhatsapp: '{{ preg_replace('/[^0-9]/', '', $supportWhatsapp ?? '') }}',
+            brandName: '{{ addslashes($brandName ?? 'CStreame') }}'
+        },
+
+        init() {
+            try {
+                const saved = localStorage.getItem('cstreame_cart');
+                if (saved) {
+                    this.cart = JSON.parse(saved);
+                }
+            } catch (e) {
+                this.cart = [];
+            }
+            this.$nextTick(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+        },
+
+        toggleFaq(id) {
+            this.openFaq = this.openFaq === id ? null : id;
+        },
+
+        saveCart() {
+            try {
+                localStorage.setItem('cstreame_cart', JSON.stringify(this.cart));
+            } catch (e) {}
+            this.$nextTick(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+        },
+
+        addToCart(plan, service) {
+            const existing = this.cart.find(i => i.planId === plan.id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                this.cart.push({
+                    planId: plan.id,
+                    serviceId: service.id,
+                    serviceName: service.name,
+                    planName: plan.name,
+                    price: parseFloat(plan.price),
+                    color: service.color_hex || '#E50914',
+                    duration: plan.duration_days,
+                    modality: plan.modality,
+                    qty: 1
+                });
+            }
+            this.saveCart();
+            this.openCartDrawer = true;
+        },
+
+        getItemQty(planId) {
+            const item = this.cart.find(i => i.planId === planId);
+            return item ? item.qty : 0;
+        },
+
+        updateQty(planId, delta) {
+            const index = this.cart.findIndex(i => i.planId === planId);
+            if (index !== -1) {
+                this.cart[index].qty += delta;
+                if (this.cart[index].qty <= 0) {
+                    this.cart.splice(index, 1);
+                }
+                this.saveCart();
+            }
+        },
+
+        removeFromCart(planId) {
+            this.cart = this.cart.filter(i => i.planId !== planId);
+            this.saveCart();
+        },
+
+        clearCart() {
+            this.cart = [];
+            this.saveCart();
+        },
+
+        get totalItems() {
+            return this.cart.reduce((sum, item) => sum + item.qty, 0);
+        },
+
+        get subtotal() {
+            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        },
+
+        get isComboApplied() {
+            return this.comboConfig.enabled && this.totalItems >= this.comboConfig.minItems;
+        },
+
+        get comboDiscount() {
+            if (!this.isComboApplied) return 0;
+            if (this.comboConfig.type === 'percent') {
+                return Math.round((this.subtotal * (this.comboConfig.amount / 100)) * 100) / 100;
+            }
+            return Math.min(this.subtotal, this.comboConfig.amount);
+        },
+
+        get finalTotal() {
+            return Math.max(0, this.subtotal - this.comboDiscount);
+        },
+
+        get itemsNeededForCombo() {
+            return Math.max(0, this.comboConfig.minItems - this.totalItems);
+        },
+
+        formatMoney(val) {
+            return '$' + new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 }).format(val);
+        },
+
+        get whatsappCheckoutUrl() {
+            if (!this.comboConfig.sellerWhatsapp) return '#';
+            let lines = [];
+            lines.push(`Hola *${this.comboConfig.brandName}*! Quiero comprar el siguiente pedido:`);
+            lines.push('');
+            lines.push('🛒 *DETALLE DE MI PEDIDO:*');
+            this.cart.forEach(item => {
+                lines.push(`• ${item.qty}x *${item.serviceName}* (${item.planName}) - ${this.formatMoney(item.price * item.qty)}`);
+            });
+            lines.push('');
+            lines.push(`Subtotal: ${this.formatMoney(this.subtotal)}`);
+            if (this.isComboApplied) {
+                lines.push(`🔥 *Descuento Combo (${this.comboConfig.minItems}+ cuentas): -${this.formatMoney(this.comboDiscount)}*`);
+            }
+            lines.push(`💰 *TOTAL A PAGAR: ${this.formatMoney(this.finalTotal)}*`);
+            lines.push('');
+            lines.push('¿Me confirmas los datos de pago para la activación en mi Bóveda?');
+            return 'https://wa.me/' + this.comboConfig.sellerWhatsapp + '?text=' + encodeURIComponent(lines.join('\n'));
+        }
+    };
+}
+</script>
 @endsection
