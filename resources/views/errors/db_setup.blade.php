@@ -23,10 +23,10 @@
         <!-- Mensaje Explicativo -->
         <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 leading-relaxed space-y-2">
             <p>
-                <strong>¡Excelente noticia!</strong> El servidor PHP en Vercel está 100% activo y respondiendo. Sin embargo, Vercel es una plataforma <em>Serverless</em> que no incluye un servidor MySQL local (<code class="bg-black/30 px-1 py-0.5 rounded font-mono">127.0.0.1</code>).
+                <strong>¡Excelente noticia!</strong> El servidor PHP en Vercel está 100% activo y respondiendo. Sin embargo, Vercel es una plataforma <em>Serverless</em> que no incluye una base de datos local (<code class="bg-black/30 px-1 py-0.5 rounded font-mono">127.0.0.1</code>).
             </p>
             <p>
-                Para que el catálogo de streaming, las ventas y los usuarios funcionen, la aplicación necesita conectarse a una base de datos MySQL en la nube.
+                Para que el catálogo de streaming, las ventas y los usuarios funcionen, la aplicación necesita conectarse a una base de datos en la nube (como <strong>Supabase</strong> PostgreSQL o MySQL).
             </p>
         </div>
 

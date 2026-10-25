@@ -48,7 +48,11 @@ Route::get('/health', function () {
     try {
         \DB::connection()->getPdo();
         $connected = true;
-        $tables = \DB::select('SHOW TABLES');
+        if ($dbConfig === 'pgsql') {
+            $tables = \DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+        } else {
+            $tables = \DB::select('SHOW TABLES');
+        }
     } catch (\Throwable $e) {
         $error = $e->getMessage();
     }
@@ -56,6 +60,7 @@ Route::get('/health', function () {
     return response()->json([
         'status' => $connected ? 'ok' : 'database_error',
         'server' => 'Vercel Serverless PHP ' . PHP_VERSION,
+        'pdo_drivers' => extension_loaded('pdo') ? \PDO::getAvailableDrivers() : [],
         'app_env' => config('app.env'),
         'app_debug' => config('app.debug'),
         'database' => [
