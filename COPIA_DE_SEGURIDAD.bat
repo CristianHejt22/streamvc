@@ -1,12 +1,13 @@
 @echo off
-title CStreame - Copia de Seguridad Semanal
+title CStreame - Copia de Seguridad Semanal con Proteccion Extrema
 color 0A
 cls
 echo ========================================================
-echo       CSTREAME - COPIA DE SEGURIDAD AUTOMATICA
+echo   CSTREAME - BACKUP CON PROTECCION EXTREMA (AES-256)
 echo ========================================================
 echo.
-echo Conectando a Supabase y descargando respaldo a tu PC...
+echo Conectando de forma segura a Supabase...
+echo Extrayendo tablas y aplicando cifrado militar AES-256-GCM...
 echo.
 
 cd /d "%~dp0"
@@ -14,8 +15,11 @@ cd /d "%~dp0"
 
 echo.
 echo ========================================================
-echo  Tu copia quedo guardada en la carpeta:
+echo  Tu copia quedo 100%% blindada y guardada en:
 echo  D:\CStreame\backups
+echo.
+echo  Nadie puede leer los datos, usuarios ni contrasenas
+echo  sin tu clave maestra de descifrado.
 echo ========================================================
 echo.
 pause

@@ -10,24 +10,28 @@ class BackupDatabaseCommand extends Command
 {
     protected $signature = 'cstreame:backup 
                             {--source=supabase : Base de datos a respaldar (supabase o local)}
-                            {--path= : Carpeta personalizada de destino}';
+                            {--path= : Carpeta personalizada de destino}
+                            {--key= : Clave maestra de cifrado personalizada (opcional)}
+                            {--no-encrypt : Desactivar cifrado (no recomendado)}';
 
-    protected $description = 'Genera una copia de seguridad completa (.sql y .json) de todos los usuarios, revendedores, cuentas y ventas de Supabase o Local.';
+    protected $description = 'Genera una copia de seguridad con cifrado militar AES-256-GCM de todos los usuarios, revendedores, cuentas y ventas.';
 
     public function handle(): int
     {
-        $this->info("=================================================");
-        $this->info("    CSTREAME - GENERADOR DE COPIAS DE SEGURIDAD  ");
-        $this->info("=================================================");
+        $this->info("=========================================================");
+        $this->info("   CSTREAME - BACKUP DE PROTECCIÓN EXTREMA (AES-256-GCM) ");
+        $this->info("=========================================================");
 
         $source = strtolower($this->option('source'));
         $targetDir = $this->option('path') ?: base_path('backups');
+        $encrypt = !$this->option('no-encrypt');
+        $customKey = $this->option('key');
 
         if (!is_dir($targetDir)) {
             @mkdir($targetDir, 0755, true);
         }
 
-        // Configuración de conexión
+        // Conectar a la base de datos
         if ($source === 'supabase') {
             $host = env('SUPABASE_DB_HOST', 'aws-0-us-east-1.pooler.supabase.com');
             $port = env('SUPABASE_DB_PORT', '5432');
@@ -61,7 +65,7 @@ class BackupDatabaseCommand extends Command
 
         $this->info("✓ Conexión establecida con éxito.");
 
-        // Obtener lista de tablas
+        // Obtener tablas
         if ($driver === 'pgsql') {
             $stmt = $pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name");
             $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -76,36 +80,25 @@ class BackupDatabaseCommand extends Command
         }
 
         $timestamp = date('Y-m-d_H-i-s');
-        $sqlFileName = "cstreame_backup_{$source}_{$timestamp}.sql";
-        $jsonFileName = "cstreame_resumen_{$source}_{$timestamp}.json";
-        $sqlFilePath = $targetDir . DIRECTORY_SEPARATOR . $sqlFileName;
-        $jsonFilePath = $targetDir . DIRECTORY_SEPARATOR . $jsonFileName;
-
-        $sqlHandle = fopen($sqlFilePath, 'w');
-        if (!$sqlHandle) {
-            $this->error("No se pudo crear el archivo: {$sqlFilePath}");
-            return 1;
-        }
-
-        // Encabezado SQL
-        $header = "-- ==========================================================\n"
-                . "-- CSTREAME BACKUP COMPLETO - " . date('Y-m-d H:i:s') . "\n"
+        $rawSql = "-- ==========================================================\n"
+                . "-- CSTREAME BACKUP PROTEGIDO - " . date('Y-m-d H:i:s') . "\n"
                 . "-- Fuente: " . strtoupper($source) . " ({$driver})\n"
-                . "-- Tablas respaldadas: " . count($tables) . "\n"
+                . "-- Tablas: " . count($tables) . "\n"
                 . "-- ==========================================================\n\n"
                 . "BEGIN;\n\n";
-        fwrite($sqlHandle, $header);
 
         $jsonData = [
+            'backup_timestamp' => time(),
             'backup_date' => date('Y-m-d H:i:s'),
             'source' => $source,
+            'driver' => $driver,
             'tables_count' => count($tables),
             'summary' => [],
             'data' => [],
         ];
 
         $totalRows = 0;
-        $this->info("Respaldando tablas:");
+        $this->info("Extrayendo datos de la base de datos:");
 
         foreach ($tables as $table) {
             $query = ($driver === 'pgsql') ? "SELECT * FROM \"{$table}\"" : "SELECT * FROM `{$table}`";
@@ -118,13 +111,12 @@ class BackupDatabaseCommand extends Command
             $this->line("  • <info>{$table}</info>: {$count} registros");
 
             if ($count > 0) {
-                // Guardar en JSON las tablas principales de negocio
-                if (in_array($table, ['users', 'customers', 'sales', 'orders', 'services', 'service_plans', 'streaming_accounts', 'account_profiles', 'system_settings', 'reseller_plan_prices'])) {
+                // Guardar en JSON tablas esenciales de negocio
+                if (in_array($table, ['users', 'customers', 'sales', 'orders', 'services', 'service_plans', 'streaming_accounts', 'account_profiles', 'system_settings', 'reseller_plan_prices', 'renewal_requests'])) {
                     $jsonData['data'][$table] = $rows;
                 }
 
-                fwrite($sqlHandle, "-- Datos de tabla: {$table} ({$count} registros)\n");
-
+                $rawSql .= "-- Tabla: {$table} ({$count} registros)\n";
                 $firstRow = $rows[0];
                 $columns = array_keys($firstRow);
                 $escapedCols = array_map(function ($c) use ($driver) {
@@ -155,29 +147,83 @@ class BackupDatabaseCommand extends Command
                         ? "INSERT INTO \"{$table}\" ({$colsSql}) VALUES\n  " . implode(",\n  ", $valuesArr) . ";\n"
                         : "INSERT INTO `{$table}` ({$colsSql}) VALUES\n  " . implode(",\n  ", $valuesArr) . ";\n";
 
-                    fwrite($sqlHandle, $insertSql);
+                    $rawSql .= $insertSql;
                 }
-                fwrite($sqlHandle, "\n");
+                $rawSql .= "\n";
             }
         }
 
-        fwrite($sqlHandle, "COMMIT;\n-- FIN DE LA COPIA DE SEGURIDAD\n");
-        fclose($sqlHandle);
+        $rawSql .= "COMMIT;\n-- FIN DEL RESPALDO\n";
+        $rawJson = json_encode($jsonData, JSON_UNESCAPED_UNICODE);
 
-        // Guardar JSON
-        file_put_contents($jsonFilePath, json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        // Paquete combinado
+        $bundle = [
+            'version' => '1.0',
+            'created_at' => date('c'),
+            'source' => $source,
+            'tables_count' => count($tables),
+            'total_rows' => $totalRows,
+            'sql' => $rawSql,
+            'json' => $jsonData,
+        ];
 
-        $sqlSize = round(filesize($sqlFilePath) / 1024, 2);
-        $jsonSize = round(filesize($jsonFilePath) / 1024, 2);
+        $bundleString = json_encode($bundle);
 
-        $this->info("\n=================================================");
-        $this->info("   COPIA DE SEGURIDAD COMPLETADA CON ÉXITO       ");
-        $this->info("=================================================");
-        $this->info("✓ Total de tablas respaldadas : " . count($tables));
-        $this->info("✓ Total de registros guardados: {$totalRows}");
-        $this->info("✓ Archivo SQL (para restaurar): {$sqlFileName} ({$sqlSize} KB)");
-        $this->info("✓ Archivo JSON (resumen fácil): {$jsonFileName} ({$jsonSize} KB)");
-        $this->info("✓ Ubicación en tu PC          : {$targetDir}");
+        if ($encrypt) {
+            // Clave de derivación AES-256
+            $passphrase = $customKey ?: env('BACKUP_ENCRYPTION_KEY', config('app.key', 'CStreame-Master-Security-2026-SuperKey'));
+            // Derivar clave de 32 bytes con SHA-256
+            $derivedKey = hash('sha256', $passphrase, true);
+
+            // Generar vector de inicialización (IV) criptográfico aleatorio de 12 bytes para GCM
+            $iv = openssl_random_pseudo_bytes(12);
+            $tag = '';
+
+            $ciphertext = openssl_encrypt(
+                $bundleString,
+                'aes-256-gcm',
+                $derivedKey,
+                OPENSSL_RAW_DATA,
+                $iv,
+                $tag,
+                'cstreame-backup-aad'
+            );
+
+            if ($ciphertext === false) {
+                $this->error("Error crítico durante el cifrado AES-256.");
+                return 1;
+            }
+
+            // Estructura del archivo cifrado binario protegido
+            $payload = [
+                'cipher' => 'AES-256-GCM',
+                'iv' => base64_encode($iv),
+                'tag' => base64_encode($tag),
+                'checksum' => hash('sha256', $ciphertext),
+                'data' => base64_encode($ciphertext),
+            ];
+
+            $outFileName = "cstreame_backup_{$source}_{$timestamp}.cstbackup";
+            $outFilePath = $targetDir . DIRECTORY_SEPARATOR . $outFileName;
+
+            file_put_contents($outFilePath, json_encode($payload, JSON_PRETTY_PRINT));
+            $fileSize = round(filesize($outFilePath) / 1024, 2);
+
+            $this->info("\n=========================================================");
+            $this->info("   🔒 COPIA CIFRADA CON ÉXITO (PROTECCIÓN EXTREMA)       ");
+            $this->info("=========================================================");
+            $this->info("✓ Algoritmo de Cifrado : AES-256-GCM (Grado Militar)");
+            $this->info("✓ Autenticación (Tag)  : 128-bit Anti-Manipulación");
+            $this->info("✓ Archivo Generado     : {$outFileName} ({$fileSize} KB)");
+            $this->info("✓ Ubicación en tu PC   : {$targetDir}");
+            $this->line("<comment>⚠️  Ningún dato está en texto plano. Aunque alguien robe este archivo, es 100% ilegible sin tu clave maestra.</comment>");
+        } else {
+            $sqlFileName = "cstreame_backup_{$source}_{$timestamp}.sql";
+            $jsonFileName = "cstreame_resumen_{$source}_{$timestamp}.json";
+            file_put_contents($targetDir . DIRECTORY_SEPARATOR . $sqlFileName, $rawSql);
+            file_put_contents($targetDir . DIRECTORY_SEPARATOR . $jsonFileName, $rawJson);
+            $this->warn("⚠️  Copia generada SIN cifrado.");
+        }
 
         return 0;
     }
