@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ $brandName }}">
-    <link rel="manifest" href="{{ route('pwa.manifest', ['ref' => $seller ? $seller->referral_code : '']) }}">
+    <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="{{ $brandIcon }}">
     <link rel="icon" type="image/svg+xml" href="{{ $brandIcon }}">
 

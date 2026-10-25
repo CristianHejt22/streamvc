@@ -12,8 +12,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ $brandName ?? 'CStreame Streaming' }}">
-    <link rel="manifest" href="{{ route('pwa.manifest', ['ref' => request('ref') ?? (isset($seller) ? $seller->referral_code : '')]) }}">
-    <link rel="apple-touch-icon" href="{{ isset($brandLogo) && $brandLogo ? asset($brandLogo) : asset('images/cstreame-icon.svg') }}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/cstreame-icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="/images/cstreame-icon.svg">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -30,17 +31,17 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             window.deferredPwaPrompt = e;
-            const btn = document.getElementById('pwa-header-btn');
-            if (btn) {
+            document.querySelectorAll('.pwa-install-btn').forEach(btn => {
                 btn.classList.add('ring-2', 'ring-amber-400/50', 'animate-pulse');
-            }
+            });
         });
 
         window.addEventListener('appinstalled', () => {
             window.isPwaInstalled = true;
             window.deferredPwaPrompt = null;
-            const btnText = document.getElementById('pwa-header-btn-text');
-            if (btnText) btnText.innerText = 'App Instalada ✓';
+            document.querySelectorAll('.pwa-btn-label, #pwa-header-btn-text').forEach(el => {
+                el.innerText = 'App Instalada ✓';
+            });
         });
     </script>
 </head>
@@ -211,9 +212,51 @@
         </div>
     </footer>
 
+    <!-- Toast de Notificación PWA -->
+    <div id="pwa-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-2xl flex items-center gap-2.5 transition-all">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span class="toast-msg">¡App instalada correctamente!</span>
+    </div>
+
+    <!-- Modal Guía para Android (Chrome / Samsung) -->
+    <div id="pwa-android-modal" class="pwa-modal hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md" onclick="if(event.target===this)closePwaModal('pwa-android-modal')">
+        <div class="relative w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <button type="button" onclick="closePwaModal('pwa-android-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                <i data-lucide="smartphone" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-white">Instalar App en Android</h3>
+                <p class="text-xs text-slate-400 mt-1">Sigue estos pasos rápidos en tu navegador:</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left text-xs text-slate-300 space-y-2.5">
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                    <span>Toca los <strong>tres puntos (⋮)</strong> en la esquina superior derecha del navegador.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                    <span>Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong> 📲.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                    <span>Confirma en <strong>"Instalar"</strong>. ¡Listo! La App quedará en tu pantalla.</span>
+                </div>
+            </div>
+            <button type="button" onclick="closePwaModal('pwa-android-modal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
+                ¡Entendido!
+            </button>
+        </div>
+    </div>
+
     <!-- Modal Guía para iPhone / iPad (Safari) -->
-    <div id="pwa-ios-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-        <div class="w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+    <div id="pwa-ios-modal" class="pwa-modal hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md" onclick="if(event.target===this)closePwaModal('pwa-ios-modal')">
+        <div class="relative w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <button type="button" onclick="closePwaModal('pwa-ios-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
             <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center mx-auto">
                 <i data-lucide="smartphone" class="w-6 h-6"></i>
             </div>
@@ -228,11 +271,78 @@
                 </div>
                 <div class="flex items-start gap-2.5">
                     <span class="w-5 h-5 rounded-full bg-sky-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
-                    <span>Desliza y selecciona <strong>"Agregar a pantalla de inicio" ➕</strong>.</span>
+                    <span>Desliza hacia abajo y toca <strong>"Agregar a pantalla de inicio" ➕</strong>.</span>
                 </div>
             </div>
-            <button type="button" onclick="document.getElementById('pwa-ios-modal').classList.add('hidden')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
+            <button type="button" onclick="closePwaModal('pwa-ios-modal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
                 ¡Entendido!
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Guía para Computadora (PC / Mac) -->
+    <div id="pwa-desktop-modal" class="pwa-modal hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md" onclick="if(event.target===this)closePwaModal('pwa-desktop-modal')">
+        <div class="relative w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <button type="button" onclick="closePwaModal('pwa-desktop-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto">
+                <i data-lucide="monitor" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-white">Instalar en Computadora (PC / Mac)</h3>
+                <p class="text-xs text-slate-400 mt-1">Disfruta de la App en una ventana rápida e independiente:</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left text-xs text-slate-300 space-y-2.5">
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                    <span>En Chrome o Edge, haz clic en el ícono <strong>⊕ o 💻 (Instalar)</strong> en la barra de direcciones (URL) a la derecha.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                    <span>O haz clic en el menú <strong>tres puntos (⋮)</strong> y selecciona <strong>"Instalar CStreame..."</strong></span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                    <span>Confirma en <strong>"Instalar"</strong>. ¡Listo! Quedará en tu escritorio y barra de tareas.</span>
+                </div>
+            </div>
+            <button type="button" onclick="closePwaModal('pwa-desktop-modal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
+                ¡Entendido!
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Guía para WhatsApp / Redes Sociales (In-App WebView) -->
+    <div id="pwa-inapp-modal" class="pwa-modal hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md" onclick="if(event.target===this)closePwaModal('pwa-inapp-modal')">
+        <div class="relative w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <button type="button" onclick="closePwaModal('pwa-inapp-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto">
+                <i data-lucide="external-link" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-white">Abrir en el Navegador para Instalar</h3>
+                <p class="text-xs text-slate-400 mt-1">Estás dentro del navegador integrado de WhatsApp o redes sociales. Para instalar en tu pantalla:</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left text-xs text-slate-300 space-y-2.5">
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                    <span>Toca los <strong>tres puntos (⋮)</strong> o el botón <strong>Compartir</strong> arriba a la derecha.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                    <span>Selecciona <strong>"Abrir en Chrome"</strong> (o Safari en iPhone).</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                    <span>¡Desde Chrome o Safari podrás instalar la App en 1 clic!</span>
+                </div>
+            </div>
+            <button type="button" onclick="copyCurrentUrlForBrowser()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/20">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+                <span id="copy-url-btn-text">Copiar Enlace para Abrir en Chrome</span>
             </button>
         </div>
     </div>
@@ -244,25 +354,63 @@
             });
         }
 
-        async function triggerPwaInstallDirectly(e) {
-            if (e) e.preventDefault();
-            
-            if (window.isPwaInstalled) {
-                alert('¡La App ya se encuentra instalada en tu dispositivo!');
-                return;
-            }
+        function closePwaModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
+        }
 
-            const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-            if (isIos) {
-                const modal = document.getElementById('pwa-ios-modal');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    lucide.createIcons();
+        function copyCurrentUrlForBrowser() {
+            navigator.clipboard.writeText(window.location.href);
+            const btn = document.getElementById('copy-url-btn-text');
+            if (btn) btn.innerText = '✓ ¡Enlace copiado! Ábrelo en Chrome';
+            setTimeout(() => {
+                if (btn) btn.innerText = 'Copiar Enlace para Abrir en Chrome';
+            }, 3000);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.pwa-modal').forEach(m => m.classList.add('hidden'));
+            }
+        });
+
+        async function triggerPwaInstallDirectly(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            
+            // 1. Si ya está instalada la aplicación (modo standalone o previamente instalada)
+            if (window.isPwaInstalled || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                const toast = document.getElementById('pwa-toast');
+                if (toast) {
+                    toast.querySelector('.toast-msg').innerText = '¡La aplicación ya está instalada en tu dispositivo!';
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 3500);
+                } else {
+                    alert('¡La aplicación ya se encuentra instalada en este dispositivo!');
                 }
                 return;
             }
 
-            // Disparar de inmediato si ya fue capturado (1-Clic instantáneo)
+            // 2. Si todavía no se capturó beforeinstallprompt, esperar hasta 1.2 segundos
+            if (!window.deferredPwaPrompt) {
+                await new Promise((resolve) => {
+                    const timer = setTimeout(() => {
+                        window.removeEventListener('beforeinstallprompt', handler);
+                        resolve(null);
+                    }, 1200);
+
+                    function handler(ev) {
+                        ev.preventDefault();
+                        window.deferredPwaPrompt = ev;
+                        clearTimeout(timer);
+                        window.removeEventListener('beforeinstallprompt', handler);
+                        resolve(ev);
+                    }
+
+                    window.addEventListener('beforeinstallprompt', handler);
+                });
+            }
+
+            // 3. Si se capturó el prompt nativo (Chrome / Edge / Android)
             if (window.deferredPwaPrompt) {
                 try {
                     window.deferredPwaPrompt.prompt();
@@ -270,8 +418,15 @@
                     if (outcome === 'accepted') {
                         window.isPwaInstalled = true;
                         window.deferredPwaPrompt = null;
-                        const btnText = document.getElementById('pwa-header-btn-text');
-                        if (btnText) btnText.innerText = 'App Instalada ✓';
+                        document.querySelectorAll('.pwa-btn-label, #pwa-header-btn-text').forEach(el => {
+                            el.innerText = 'App Instalada ✓';
+                        });
+                        const toast = document.getElementById('pwa-toast');
+                        if (toast) {
+                            toast.querySelector('.toast-msg').innerText = '¡App instalada con éxito!';
+                            toast.classList.remove('hidden');
+                            setTimeout(() => toast.classList.add('hidden'), 3500);
+                        }
                     }
                     return;
                 } catch (err) {
@@ -279,43 +434,63 @@
                 }
             }
 
-            // Esperar brevemente a que el navegador emita el prompt
-            const btnText = document.getElementById('pwa-header-btn-text');
-            const originalText = btnText ? btnText.innerText : 'Instalar App';
-            if (btnText) btnText.innerText = 'Instalando...';
+            const userAgent = (window.navigator.userAgent || '').toLowerCase();
+            const isInApp = /fban|fbav|instagram|whatsapp|wv|micromessenger|line\//.test(userAgent);
+            const isIos = /iphone|ipad|ipod/.test(userAgent);
+            const isAndroid = /android/.test(userAgent);
 
-            const promptEvent = await new Promise((resolve) => {
-                if (window.deferredPwaPrompt) return resolve(window.deferredPwaPrompt);
-                const handler = (evt) => {
-                    evt.preventDefault();
-                    window.deferredPwaPrompt = evt;
-                    window.removeEventListener('beforeinstallprompt', handler);
-                    resolve(evt);
-                };
-                window.addEventListener('beforeinstallprompt', handler);
-                setTimeout(() => {
-                    window.removeEventListener('beforeinstallprompt', handler);
-                    resolve(null);
-                }, 1200);
-            });
-
-            if (btnText) btnText.innerText = originalText;
-
-            if (promptEvent) {
-                promptEvent.prompt();
-                const { outcome } = await promptEvent.userChoice;
-                if (outcome === 'accepted') {
-                    window.isPwaInstalled = true;
-                    window.deferredPwaPrompt = null;
-                    if (btnText) btnText.innerText = 'App Instalada ✓';
+            // 4. Si está dentro de WhatsApp / Redes Sociales
+            if (isInApp) {
+                const modal = document.getElementById('pwa-inapp-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    if (window.lucide) lucide.createIcons();
                 }
                 return;
             }
 
-            // Fallback a pantalla dedicada PWA
-            const pwaUrl = "{{ route('pwa.install', ['code' => request('ref') ?? (isset($seller) ? $seller->referral_code : '')]) }}";
-            window.location.href = pwaUrl;
+            // 5. Si es iOS Safari (iPhone / iPad)
+            if (isIos) {
+                const modal = document.getElementById('pwa-ios-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    if (window.lucide) lucide.createIcons();
+                }
+                return;
+            }
+
+            // 6. Si es Android
+            if (isAndroid) {
+                const modal = document.getElementById('pwa-android-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    if (window.lucide) lucide.createIcons();
+                }
+                return;
+            }
+
+            // 7. Si es Computadora (PC / Mac)
+            const desktopModal = document.getElementById('pwa-desktop-modal');
+            if (desktopModal) {
+                desktopModal.classList.remove('hidden');
+                if (window.lucide) lucide.createIcons();
+            } else {
+                const androidModal = document.getElementById('pwa-android-modal');
+                if (androidModal) {
+                    androidModal.classList.remove('hidden');
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
         }
+
+        // Interceptor global para cualquier botón de instalación en la página
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.pwa-install-btn, [data-pwa-install], a[href*="pwa/install"], a[href$="/app"], a[href*="/app?"]');
+            if (btn && !btn.hasAttribute('data-no-pwa-intercept')) {
+                e.preventDefault();
+                triggerPwaInstallDirectly(e);
+            }
+        });
 
         lucide.createIcons();
     </script>

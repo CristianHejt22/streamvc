@@ -174,10 +174,10 @@
                     </button>
                 </template>
 
-                <a href="{{ route('pwa.install', ['code' => $referralCode]) }}" class="px-3.5 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm" title="Instalar App de Streaming en tu dispositivo">
+                <button type="button" onclick="triggerPwaInstallDirectly(event)" class="pwa-install-btn px-3.5 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95" title="Instalar App de Streaming en tu dispositivo">
                     <i data-lucide="smartphone" class="w-4 h-4 text-purple-400"></i>
-                    <span>Instalar App</span>
-                </a>
+                    <span class="pwa-btn-label">Instalar App</span>
+                </button>
 
                 <button @click="changePinModal = true" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs flex items-center gap-1.5 border border-amber-500/30 transition-all cursor-pointer" title="Ajustar tu PIN personal de Bóveda">
                     <i data-lucide="key" class="w-4 h-4"></i>
