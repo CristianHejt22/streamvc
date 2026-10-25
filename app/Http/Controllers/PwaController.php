@@ -30,9 +30,9 @@ class PwaController extends Controller
             // PANEL BÁSICO: Marca oficial por defecto SPRO PLAY
             $name = 'SPRO PLAY Streaming';
             $shortName = 'SPRO PLAY';
-            $icon192 = asset('images/spro-play-icon-192.png');
-            $icon512 = asset('images/spro-play-icon-512.png');
-            $iconSvg = asset('images/spro-play-icon.svg');
+            $icon192 = '/images/spro-play-icon-192.png';
+            $icon512 = '/images/spro-play-icon-512.png';
+            $iconSvg = '/images/spro-play-icon.svg';
             $themeColor = '#E50914';
             $startUrl = route('catalog.index', ['ref' => $seller->referral_code]);
         } elseif ($seller) {
@@ -40,18 +40,18 @@ class PwaController extends Controller
             $name = $seller->brand_name ?: 'CStreame Streaming';
             $shortName = $seller->brand_name ?: 'CStreame';
             $customLogo = $seller->brand_logo ? asset('storage/' . $seller->brand_logo) : null;
-            $icon192 = $customLogo ?: asset('images/cstreame-icon-192.png');
-            $icon512 = $customLogo ?: asset('images/cstreame-icon-512.png');
-            $iconSvg = asset('images/cstreame-icon.svg');
+            $icon192 = $customLogo ?: '/images/cstreame-icon-192.png';
+            $icon512 = $customLogo ?: '/images/cstreame-icon-512.png';
+            $iconSvg = '/images/cstreame-icon.svg';
             $themeColor = $seller->brand_primary_color ?: '#E50914';
             $startUrl = route('catalog.index', ['ref' => $seller->referral_code]);
         } else {
             // SUPER ADMIN / MASTER PLATFORM
             $name = 'CStreame Master Platform';
             $shortName = 'CStreame';
-            $icon192 = asset('images/cstreame-icon-192.png');
-            $icon512 = asset('images/cstreame-icon-512.png');
-            $iconSvg = asset('images/cstreame-icon.svg');
+            $icon192 = '/images/cstreame-icon-192.png';
+            $icon512 = '/images/cstreame-icon-512.png';
+            $iconSvg = '/images/cstreame-icon.svg';
             $themeColor = '#E50914';
             $startUrl = '/';
         }
@@ -74,13 +74,25 @@ class PwaController extends Controller
                     'src' => $icon192,
                     'sizes' => '192x192',
                     'type' => 'image/png',
-                    'purpose' => 'any maskable'
+                    'purpose' => 'any'
+                ],
+                [
+                    'src' => $icon192,
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'maskable'
                 ],
                 [
                     'src' => $icon512,
                     'sizes' => '512x512',
                     'type' => 'image/png',
-                    'purpose' => 'any maskable'
+                    'purpose' => 'any'
+                ],
+                [
+                    'src' => $icon512,
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'maskable'
                 ],
                 [
                     'src' => $iconSvg,
@@ -92,7 +104,9 @@ class PwaController extends Controller
         ];
 
         return response()->json($manifest)
-            ->header('Content-Type', 'application/manifest+json; charset=utf-8');
+            ->header('Content-Type', 'application/manifest+json; charset=utf-8')
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Cache-Control', 'public, max-age=600');
     }
 
     /**

@@ -34,20 +34,25 @@
     deferredPrompt: window.deferredPwaPrompt || null,
     isInstalled: false,
     isIos: false,
+    isAndroid: false,
+    isInApp: false,
     showIosGuide: false,
+    showAndroidGuide: false,
+    showDesktopGuide: false,
     isPreparing: false,
     copied: false,
     init() {
-        // Detect iOS
-        const userAgent = window.navigator.userAgent.toLowerCase();
+        const userAgent = (window.navigator.userAgent || '').toLowerCase();
         this.isIos = /iphone|ipad|ipod/.test(userAgent);
+        this.isAndroid = /android/.test(userAgent);
+        this.isInApp = /fban|fbav|instagram|whatsapp|wv|micromessenger|line\//.test(userAgent);
 
-        // Detect Standalone mode (already installed)
+        // Detectar si ya corre en modo instalado Standalone
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
             this.isInstalled = true;
         }
 
-        // Capture Chrome / Edge / Android install prompt
+        // Capturar prompt de Chrome / Android
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             this.deferredPrompt = e;
@@ -63,12 +68,19 @@
     async triggerInstall() {
         if (this.isIos) {
             this.showIosGuide = true;
+            this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
             return;
         }
-        
+
+        if (this.isInApp) {
+            this.showAndroidGuide = true;
+            this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+            return;
+        }
+
         let prompt = this.deferredPrompt || window.deferredPwaPrompt;
 
-        // Si todavía está registrando el service worker, esperar hasta 1.5s para disparar con 1 solo clic
+        // Si todavía está registrando el service worker, esperar hasta 1.8s
         if (!prompt) {
             this.isPreparing = true;
             prompt = await new Promise((resolve) => {
@@ -83,7 +95,7 @@
                 setTimeout(() => {
                     window.removeEventListener('beforeinstallprompt', handler);
                     resolve(null);
-                }, 1500);
+                }, 1800);
             });
             this.isPreparing = false;
         }
@@ -99,11 +111,21 @@
                 }
             } catch (err) {
                 console.warn('Install prompt error:', err);
-                this.isInstalled = true;
+                if (this.isAndroid) {
+                    this.showAndroidGuide = true;
+                } else {
+                    this.showDesktopGuide = true;
+                }
+                this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
             }
         } else {
-            // El navegador ya completó la instalación o corre en modo standalone
-            this.isInstalled = true;
+            // El navegador requiere instalación manual vía menú
+            if (this.isAndroid) {
+                this.showAndroidGuide = true;
+            } else {
+                this.showDesktopGuide = true;
+            }
+            this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
         }
     },
     copyShareLink() {
@@ -121,6 +143,23 @@
 
     <!-- Main Content Container -->
     <main class="relative z-10 max-w-lg mx-auto w-full px-5 py-8 flex-1 flex flex-col justify-center space-y-6">
+
+        <!-- Banner si está dentro del visor de WhatsApp -->
+        <template x-if="isInApp">
+            <div class="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs space-y-2 text-left">
+                <div class="flex items-center gap-2 font-bold text-amber-200">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+                    <span>Estás navegando dentro de WhatsApp</span>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                    Para instalar la App directamente en tu pantalla de inicio:
+                </p>
+                <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-300 space-y-1">
+                    <p>1. Toca los <strong>3 puntos (⋮)</strong> en la esquina superior derecha.</p>
+                    <p>2. Elige <strong>"Abrir en Chrome"</strong> (o "Abrir en navegador").</p>
+                </div>
+            </div>
+        </template>
 
         <!-- Header / Logo -->
         <div class="text-center space-y-4">
@@ -177,7 +216,7 @@
             <template x-if="isInstalled">
                 <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold text-center flex items-center justify-center gap-2">
                     <i data-lucide="check-circle" class="w-5 h-5"></i>
-                    <span>¡App instalada en este dispositivo! Puedes abrirla desde tu pantalla de inicio.</span>
+                    <span>¡App instalada en este dispositivo! Ya puedes acceder desde tu pantalla principal.</span>
                 </div>
             </template>
 
@@ -220,6 +259,36 @@
         @endif
     </main>
 
+    <!-- Android Guide Modal -->
+    <div x-show="showAndroidGuide" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <div @click.away="showAndroidGuide = false" class="w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                <i data-lucide="smartphone" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-white">Instalar en Android (Chrome)</h3>
+                <p class="text-xs text-slate-400 mt-1">Sigue estos 3 pasos rápidos en tu navegador:</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left text-xs text-slate-300 space-y-2.5">
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                    <span>Toca los <strong>tres puntos (⋮)</strong> en la esquina superior derecha de Chrome.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                    <span>Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong> 📲.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                    <span>Confirma en <strong>"Instalar"</strong>. ¡Listo! La App aparecerá en tu menú.</span>
+                </div>
+            </div>
+            <button type="button" @click="showAndroidGuide = false" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
+                Entendido
+            </button>
+        </div>
+    </div>
+
     <!-- iOS Guide Modal -->
     <div x-show="showIosGuide" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/85 backdrop-blur-md">
         <div @click.away="showIosGuide = false" class="w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
@@ -237,10 +306,40 @@
                 </div>
                 <div class="flex items-start gap-2.5">
                     <span class="w-5 h-5 rounded-full bg-sky-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
-                    <span>Desliza y selecciona <strong>"Agregar a pantalla de inicio" ➕</strong>.</span>
+                    <span>Desliza hacia abajo y selecciona <strong>"Agregar a pantalla de inicio" ➕</strong>.</span>
                 </div>
             </div>
-            <button type="button" @click="showIosGuide = false" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs">
+            <button type="button" @click="showIosGuide = false" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <!-- Desktop Guide Modal -->
+    <div x-show="showDesktopGuide" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <div @click.away="showDesktopGuide = false" class="w-full max-w-sm bg-[#111827] border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center mx-auto">
+                <i data-lucide="monitor" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-white">Instalar en Computadora (PC / Mac)</h3>
+                <p class="text-xs text-slate-400 mt-1">Instálala como aplicación de escritorio nativa:</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left text-xs text-slate-300 space-y-2.5">
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-purple-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                    <span>Mira en la <strong>barra de direcciones (URL)</strong> de Chrome o Edge.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-purple-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                    <span>Haz clic en el icono <strong>Instalar ⊕ (o pantalla con flecha)</strong>.</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-purple-500 text-slate-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                    <span>Confirma en <strong>"Instalar"</strong>. Se abrirá como una ventana independiente.</span>
+                </div>
+            </div>
+            <button type="button" @click="showDesktopGuide = false" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer">
                 Entendido
             </button>
         </div>

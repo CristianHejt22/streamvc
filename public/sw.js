@@ -1,11 +1,16 @@
 // CStreame Progressive Web App (PWA) Service Worker
-const CACHE_NAME = 'cstreame-pwa-v1';
+const CACHE_NAME = 'cstreame-pwa-v2';
 const PRECACHE_ASSETS = [
     '/',
+    '/manifest.json',
     '/boveda/login',
+    '/images/cstreame-icon-192.png',
+    '/images/cstreame-icon-512.png',
+    '/images/cstreame-icon.svg',
+    '/images/spro-play-icon-192.png',
+    '/images/spro-play-icon-512.png',
     '/images/spro-play-icon.svg',
     '/images/spro-play-logo.svg',
-    '/images/cstreame-icon.svg',
     '/favicon.ico'
 ];
 

@@ -62,6 +62,11 @@
                         <span>Acceder a Mi Bóveda</span>
                     </a>
 
+                    <a href="{{ route('pwa.install', ['code' => $seller->referral_code]) }}" class="px-5 py-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center gap-2 shadow-xl shadow-amber-500/10 transition-all cursor-pointer">
+                        <i data-lucide="smartphone" class="w-4 h-4 text-amber-400"></i>
+                        <span>Instalar App</span>
+                    </a>
+
                     @if($supportWhatsapp)
                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $supportWhatsapp) }}?text=Hola%20{{ urlencode($brandName ?? 'CStreame') }},%20tengo%20una%20consulta%20sobre%20tus%20servicios%20de%20streaming." target="_blank" class="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-xl shadow-emerald-600/20 transition-all">
                         <i data-lucide="message-circle" class="w-4 h-4"></i>
@@ -234,6 +239,11 @@
                 <a href="{{ route('boveda.login') }}" class="px-6 py-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-xs uppercase tracking-wider border border-amber-500/30 flex items-center gap-2 transition-all cursor-pointer">
                     <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
                     <span>Bóveda Clientes</span>
+                </a>
+
+                <a href="{{ route('pwa.install') }}" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-red-600/20 to-amber-500/20 hover:from-red-600/30 hover:to-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider border border-amber-500/30 flex items-center gap-2 transition-all cursor-pointer">
+                    <i data-lucide="smartphone" class="w-4 h-4 text-amber-400"></i>
+                    <span>Instalar App</span>
                 </a>
             </div>
         </div>

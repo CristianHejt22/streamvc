@@ -1,0 +1,46 @@
+{
+  "id": "/",
+  "name": "CStreame Streaming",
+  "short_name": "CStreame",
+  "description": "Acceso directo e instalación de CStreame. Catálogo de streaming y Bóveda privada con PIN y biometría.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f19",
+  "theme_color": "#E50914",
+  "prefer_related_applications": false,
+  "categories": ["entertainment", "utilities"],
+  "icons": [
+    {
+      "src": "/images/cstreame-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/cstreame-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/cstreame-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/cstreame-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/cstreame-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
