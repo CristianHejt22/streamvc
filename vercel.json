@@ -20,6 +20,7 @@
   ],
   "env": {
     "APP_ENV": "production",
+    "APP_KEY": "base64:l/vMM1FWUWoogIA0iwfUqH68SY0oxmQowXy38v769Hg=",
     "APP_DEBUG": "false",
     "VIEW_COMPILED_PATH": "/tmp/views",
     "CACHE_DRIVER": "array",

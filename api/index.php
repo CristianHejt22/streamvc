@@ -24,6 +24,15 @@ putenv('APP_ROUTES_CACHE=/tmp/routes.php');
 putenv('APP_SERVICES_CACHE=/tmp/services.php');
 putenv('APP_PACKAGES_CACHE=/tmp/packages.php');
 
+// Garantizar clave de encriptación oficial de Laravel para Vercel
+$appKey = 'base64:l/vMM1FWUWoogIA0iwfUqH68SY0oxmQowXy38v769Hg=';
+$currentAppKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? ($_SERVER['APP_KEY'] ?? ''));
+if (empty($currentAppKey)) {
+    putenv("APP_KEY={$appKey}");
+    $_ENV['APP_KEY'] = $appKey;
+    $_SERVER['APP_KEY'] = $appKey;
+}
+
 // Supabase Smart Configuration para Vercel
 // Si Vercel tiene el host viejo de Clever Cloud, o no tiene host, o tiene el host IPv6 directo de Supabase
 $currentHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? ($_SERVER['DB_HOST'] ?? ''));
